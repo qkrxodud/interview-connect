@@ -1,0 +1,48 @@
+// ic-infra: 인프라스트럭처 계층 모듈 (ic-domain, ic-common에 의존)
+
+dependencies {
+    implementation project(':ic-domain')
+    implementation project(':ic-common')
+
+    // Spring Web (필터 사용을 위해 필요)
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+
+    // Spring Security
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+
+    // JWT
+    implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
+    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5'
+    runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5'
+
+    // Redis
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+
+    // Spring Data JPA
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+
+    // H2 Database (로컬 개발용)
+    runtimeOnly 'com.h2database:h2'
+
+    // Test
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.springframework.security:spring-security-test'
+    testImplementation 'org.assertj:assertj-core'
+    testImplementation('com.github.javafaker:javafaker:1.0.2') {
+        exclude group: 'org.yaml', module: 'snakeyaml'
+    }
+
+    // Test dependencies from other modules
+    testImplementation project(':ic-common').sourceSets.test.output
+}
+
+// 빌드 결과물이 JAR 형태로 생성되도록 설정
+jar {
+    enabled = true
+    archiveClassifier = ''
+}
+
+// Spring Boot fat jar 비활성화 (라이브러리 모듈)
+bootJar {
+    enabled = false
+}

@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head}">
+    <title>후기 수정 - Interview Connect</title>
+</head>
+
+<body>
+    <nav th:replace="~{fragments/layout :: navbar}"></nav>
+    <div th:replace="~{fragments/layout :: alerts}"></div>
+
+    <div class="container my-4">
+        <!-- 페이지 헤더 -->
+        <div class="row mb-4">
+            <div class="col">
+                <h1 class="h3">
+                    <i class="fas fa-edit text-primary"></i>
+                    면접 후기 수정
+                </h1>
+                <p class="text-muted">작성하신 후기를 수정할 수 있습니다.</p>
+            </div>
+            <div class="col-auto">
+                <a th:href="@{/reviews/{id}(id=${review.id})}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left"></i> 후기로 돌아가기
+                </a>
+            </div>
+        </div>
+
+        <!-- 수정 폼 -->
+        <div class="card">
+            <div class="card-body">
+                <form th:action="@{/reviews/{id}/edit(id=${review.id})}" th:object="${reviewUpdateRequest}" method="post">
+                    <!-- 회사명 (읽기 전용) -->
+                    <div class="mb-3">
+                        <label class="form-label">
+                            <i class="fas fa-building text-primary"></i>
+                            회사
+                        </label>
+                        <input type="text" class="form-control" th:value="${review.companyName}" readonly>
+                        <small class="text-muted">회사는 수정할 수 없습니다.</small>
+                    </div>
+
+                    <!-- 직무 -->
+                    <div class="mb-3">
+                        <label for="position" class="form-label">
+                            <i class="fas fa-briefcase text-primary"></i>
+                            직무 <span class="text-danger">*</span>
+                        </label>
+                        <input type="text" th:field="*{position}" id="position" class="form-control"
+                               placeholder="예: 백엔드 개발자, 프론트엔드 개발자, 데이터 사이언티스트" required>
+                        <div th:if="${#fields.hasErrors('position')}" class="text-danger small" th:errors="*{position}">오류 메시지</div>
+                    </div>
+
+                    <!-- 면접 날짜 (읽기 전용) -->
+                    <div class="mb-3">
+                        <label class="form-label">
+                            <i class="fas fa-calendar text-primary"></i>
+                            면접 날짜
+                        </label>
+                        <input type="text" class="form-control" th:value="${#temporals.format(review.interviewDate, 'yyyy-MM-dd')}" readonly>
+                        <small class="text-muted">면접 날짜는 수정할 수 없습니다.</small>
+                    </div>
+
+                    <!-- 면접 유형 -->
+                    <div class="mb-3">
+                        <label class="form-label">
+                            <i class="fas fa-list text-primary"></i>
+                            면접 유형 <span class="text-danger">*</span>
+                        </label>
+                        <div class="row">
+                            <div th:each="type : ${interviewTypes}" class="col-md-3 mb-2">
+                                <div class="form-check">
+                                    <input type="checkbox" th:field="*{interviewTypes}" th:value="${type}"
+                                           class="form-check-input" th:id="${'type_' + type}">
+                                    <label class="form-check-label" th:for="${'type_' + type}" th:text="${type}">
+                                        기술면접
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        <div th:if="${#fields.hasErrors('interviewTypes')}" class="text-danger small" th:errors="*{interviewTypes}">오류 메시지</div>
+                    </div>
+
+                    <!-- 면접 질문 -->
+                    <div class="mb-3">
+                        <label for="questionsText" class="form-label">
+                            <i class="fas fa-question-circle text-primary"></i>
+                            면접 질문
+                        </label>
+                        <textarea id="questionsText" class="form-control" rows="4"
+                                  th:text="${#strings.listJoin(reviewUpdateRequest.questions, '&#10;')}"
+                                  placeholder="받은 면접 질문들을 한 줄씩 입력해주세요.&#10;예:&#10;자바의 특징에 대해 설명해주세요.&#10;스프링 프레임워크의 장점은 무엇인가요?&#10;본인의 프로젝트 경험에 대해 말씀해주세요."></textarea>
+                        <small class="text-muted">질문을 한 줄씩 입력하면 자동으로 목록으로 저장됩니다.</small>
+                        <!-- Hidden input for actual questions list -->
+                        <input type="hidden" th:field="*{questions}" id="questionsHidden">
+                    </div>
+
+                    <!-- 평점 섹션 -->
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="difficulty" class="form-label">
+                                <i class="fas fa-star text-warning"></i>
+                                난이도 <span class="text-danger">*</span>
+                            </label>
+                            <select th:field="*{difficulty}" id="difficulty" class="form-select" required>
+                                <option value="">난이도를 선택해주세요</option>
+                                <option th:each="i : ${#numbers.sequence(1, 5)}" th:value="${i}">
+                                    <span th:text="${i + '점'}"></span>
+                                </option>
+                            </select>
+                            <div th:if="${#fields.hasErrors('difficulty')}" class="text-danger small" th:errors="*{difficulty}">오류 메시지</div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="atmosphere" class="form-label">
+                                <i class="fas fa-heart text-danger"></i>
+                                분위기 <span class="text-danger">*</span>
+                            </label>
+                            <select th:field="*{atmosphere}" id="atmosphere" class="form-select" required>
+                                <option value="">분위기를 선택해주세요</option>
+                                <option th:each="i : ${#numbers.sequence(1, 5)}" th:value="${i}">
+                                    <span th:text="${i + '점'}"></span>
+                                </option>
+                            </select>
+                            <div th:if="${#fields.hasErrors('atmosphere')}" class="text-danger small" th:errors="*{atmosphere}">오류 메시지</div>
+                        </div>
+                    </div>
+
+                    <!-- 면접 결과 -->
+                    <div class="mb-3">
+                        <label for="result" class="form-label">
+                            <i class="fas fa-check-circle text-success"></i>
+                            면접 결과 <span class="text-danger">*</span>
+                        </label>
+                        <select th:field="*{result}" id="result" class="form-select" required>
+                            <option value="">결과를 선택해주세요</option>
+                            <option th:each="resultType : ${interviewResults}"
+                                    th:value="${resultType}"
+                                    th:text="${resultType.description}">
+                                합격
+                            </option>
+                        </select>
+                        <div th:if="${#fields.hasErrors('result')}" class="text-danger small" th:errors="*{result}">오류 메시지</div>
+                    </div>
+
+                    <!-- 후기 내용 -->
+                    <div class="mb-4">
+                        <label for="content" class="form-label">
+                            <i class="fas fa-edit text-primary"></i>
+                            후기 내용 <span class="text-danger">*</span>
+                        </label>
+                        <textarea th:field="*{content}" id="content" class="form-control" rows="10" required
+                                  placeholder="면접 경험을 자세히 공유해주세요.&#10;&#10;• 면접 진행 과정&#10;• 면접관의 태도&#10;• 준비했던 내용 중 도움이 된 것&#10;• 아쉬웠던 점&#10;• 후배들에게 조언하고 싶은 내용&#10;&#10;등을 포함하여 작성해주시면 더욱 도움이 됩니다."></textarea>
+                        <div th:if="${#fields.hasErrors('content')}" class="text-danger small" th:errors="*{content}">오류 메시지</div>
+                        <small class="text-muted">최소 50자 이상 작성해주세요.</small>
+                    </div>
+
+                    <!-- 버튼 -->
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> 수정 완료
+                        </button>
+                        <a th:href="@{/reviews/{id}(id=${review.id})}" class="btn btn-secondary">
+                            <i class="fas fa-times"></i> 취소
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <footer th:replace="~{fragments/layout :: footer}"></footer>
+    <div th:replace="~{fragments/layout :: scripts}"></div>
+
+    <!-- Questions 처리 스크립트 -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const questionsTextarea = document.getElementById('questionsText');
+            const questionsHidden = document.getElementById('questionsHidden');
+
+            questionsTextarea.addEventListener('blur', function() {
+                const lines = this.value.split('\n')
+                    .map(line => line.trim())
+                    .filter(line => line.length > 0);
+                questionsHidden.value = JSON.stringify(lines);
+            });
+        });
+    </script>
+</body>
+</html>

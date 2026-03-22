@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head}">
+    <title>회원가입 - Interview Connect</title>
+</head>
+
+<body class="bg-light">
+    <div class="container">
+        <div class="row justify-content-center align-items-center min-vh-100">
+            <div class="col-md-6 col-lg-5">
+                <!-- 로고 -->
+                <div class="text-center mb-4">
+                    <a th:href="@{/}" class="text-decoration-none">
+                        <h2 class="text-primary">
+                            <i class="fas fa-handshake"></i> Interview Connect
+                        </h2>
+                    </a>
+                    <p class="text-muted">면접 경험을 공유하고 성장해보세요</p>
+                </div>
+
+                <!-- 회원가입 폼 -->
+                <div class="card shadow">
+                    <div class="card-body p-4">
+                        <h3 class="card-title text-center mb-4">회원가입</h3>
+
+                        <!-- 오류 메시지 -->
+                        <div th:if="${error}" class="alert alert-danger" role="alert">
+                            <i class="fas fa-exclamation-circle"></i>
+                            <span th:text="${error}">오류 메시지</span>
+                        </div>
+
+                        <form th:action="@{/auth/signup}" th:object="${signupRequest}" method="post">
+                            <!-- 이메일 -->
+                            <div class="mb-3">
+                                <label for="email" class="form-label">
+                                    <i class="fas fa-envelope text-primary"></i>
+                                    이메일 <span class="text-danger">*</span>
+                                </label>
+                                <input type="email" th:field="*{email}" class="form-control" id="email"
+                                       th:classappend="${#fields.hasErrors('email')} ? 'is-invalid' : ''"
+                                       placeholder="이메일을 입력해주세요" required>
+                                <div th:if="${#fields.hasErrors('email')}" class="invalid-feedback" th:errors="*{email}">이메일 오류</div>
+                            </div>
+
+                            <!-- 비밀번호 -->
+                            <div class="mb-3">
+                                <label for="password" class="form-label">
+                                    <i class="fas fa-lock text-primary"></i>
+                                    비밀번호 <span class="text-danger">*</span>
+                                </label>
+                                <input type="password" th:field="*{password}" class="form-control" id="password"
+                                       th:classappend="${#fields.hasErrors('password')} ? 'is-invalid' : ''"
+                                       placeholder="비밀번호를 입력해주세요 (8자 이상)" required>
+                                <div class="form-text">영문, 숫자, 특수문자를 포함하여 8자 이상 입력해주세요.</div>
+                                <div th:if="${#fields.hasErrors('password')}" class="invalid-feedback" th:errors="*{password}">비밀번호 오류</div>
+                            </div>
+
+                            <!-- 닉네임 -->
+                            <div class="mb-3">
+                                <label for="nickname" class="form-label">
+                                    <i class="fas fa-user text-primary"></i>
+                                    닉네임 <span class="text-danger">*</span>
+                                </label>
+                                <input type="text" th:field="*{nickname}" class="form-control" id="nickname"
+                                       th:classappend="${#fields.hasErrors('nickname')} ? 'is-invalid' : ''"
+                                       placeholder="닉네임을 입력해주세요 (2-30자)" required>
+                                <div th:if="${#fields.hasErrors('nickname')}" class="invalid-feedback" th:errors="*{nickname}">닉네임 오류</div>
+                            </div>
+
+                            <!-- 이용약관 동의 -->
+                            <div class="mb-3">
+                                <div class="form-check">
+                                    <input type="checkbox" class="form-check-input" id="agreeTerms" name="agreeTerms" required>
+                                    <label class="form-check-label" for="agreeTerms">
+                                        <a href="#" class="text-decoration-none">서비스 이용약관</a> 및
+                                        <a href="#" class="text-decoration-none">개인정보처리방침</a>에 동의합니다
+                                        <span class="text-danger">*</span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- 마케팅 수신 동의 -->
+                            <div class="mb-4">
+                                <div class="form-check">
+                                    <input type="checkbox" class="form-check-input" id="agreeMarketing" name="agreeMarketing">
+                                    <label class="form-check-label" for="agreeMarketing">
+                                        마케팅 정보 수신에 동의합니다 (선택)
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- 회원가입 버튼 -->
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="fas fa-user-plus"></i> 회원가입
+                            </button>
+                        </form>
+
+                        <!-- 로그인 링크 -->
+                        <div class="text-center mt-3">
+                            <p class="text-muted mb-0">
+                                이미 계정이 있으신가요?
+                                <a th:href="@{/auth/login}" class="text-decoration-none">로그인</a>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 서비스 소개 -->
+                <div class="text-center mt-4">
+                    <p class="text-muted small">
+                        <a th:href="@{/reviews}" class="text-decoration-none">
+                            <i class="fas fa-eye"></i> 로그인 없이 후기 둘러보기
+                        </a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>

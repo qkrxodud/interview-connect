@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head}">
+    <title>로그인 - Interview Connect</title>
+</head>
+
+<body class="bg-light">
+    <div class="container">
+        <div class="row justify-content-center align-items-center min-vh-100">
+            <div class="col-md-6 col-lg-5">
+                <!-- 로고 -->
+                <div class="text-center mb-4">
+                    <a th:href="@{/}" class="text-decoration-none">
+                        <h2 class="text-primary">
+                            <i class="fas fa-handshake"></i> Interview Connect
+                        </h2>
+                    </a>
+                    <p class="text-muted">면접 경험을 공유하고 성장해보세요</p>
+                </div>
+
+                <!-- 로그인 폼 -->
+                <div class="card shadow">
+                    <div class="card-body p-4">
+                        <h3 class="card-title text-center mb-4">로그인</h3>
+
+                        <!-- 오류 메시지 -->
+                        <div th:if="${error}" class="alert alert-danger" role="alert">
+                            <i class="fas fa-exclamation-circle"></i>
+                            <span th:text="${error}">오류 메시지</span>
+                        </div>
+
+                        <form th:action="@{/auth/login}" method="post">
+                            <!-- 이메일 -->
+                            <div class="mb-3">
+                                <label for="email" class="form-label">
+                                    <i class="fas fa-envelope text-primary"></i> 이메일
+                                </label>
+                                <input type="email" class="form-control" id="email" name="email"
+                                       placeholder="이메일을 입력해주세요" required>
+                            </div>
+
+                            <!-- 비밀번호 -->
+                            <div class="mb-3">
+                                <label for="password" class="form-label">
+                                    <i class="fas fa-lock text-primary"></i> 비밀번호
+                                </label>
+                                <input type="password" class="form-control" id="password" name="password"
+                                       placeholder="비밀번호를 입력해주세요" required>
+                            </div>
+
+                            <!-- 로그인 유지 -->
+                            <div class="mb-3 form-check">
+                                <input type="checkbox" class="form-check-input" id="remember-me" name="remember-me">
+                                <label class="form-check-label" for="remember-me">
+                                    로그인 상태 유지
+                                </label>
+                            </div>
+
+                            <!-- 로그인 버튼 -->
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="fas fa-sign-in-alt"></i> 로그인
+                            </button>
+                        </form>
+
+                        <!-- 회원가입 링크 -->
+                        <div class="text-center mt-3">
+                            <p class="text-muted mb-0">
+                                아직 계정이 없으신가요?
+                                <a th:href="@{/auth/signup}" class="text-decoration-none">회원가입</a>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 서비스 소개 -->
+                <div class="text-center mt-4">
+                    <p class="text-muted small">
+                        <a th:href="@{/reviews}" class="text-decoration-none">
+                            <i class="fas fa-eye"></i> 로그인 없이 후기 둘러보기
+                        </a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>

@@ -1,0 +1,45 @@
+// ic-api: REST API 컨트롤러 모듈 (모든 모듈에 의존)
+
+dependencies {
+    implementation project(':ic-domain')
+    implementation project(':ic-infra')
+    implementation project(':ic-common')
+
+    // Spring Boot Web
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+
+    // Thymeleaf
+    implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
+    implementation 'org.thymeleaf.extras:thymeleaf-extras-springsecurity6'
+
+    // Spring Security
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+
+    // Spring Data JPA (JPA 어노테이션 사용을 위해 필요)
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+
+    // Validation
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+
+    // Test
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.springframework.security:spring-security-test'
+    testImplementation 'org.assertj:assertj-core'
+    testImplementation('com.github.javafaker:javafaker:1.0.2') {
+        exclude group: 'org.yaml', module: 'snakeyaml'
+    }
+
+    // Test dependencies from other modules
+    testImplementation project(':ic-common').sourceSets.test.output
+    testImplementation project(':ic-domain').sourceSets.test.output
+    testImplementation project(':ic-infra').sourceSets.test.output
+}
+
+// Spring Boot 실행 가능한 JAR 생성
+jar {
+    enabled = false
+}
+
+bootJar {
+    enabled = true
+}

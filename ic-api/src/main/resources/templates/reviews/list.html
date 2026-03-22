@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/layout :: head}">
+    <title>면접 후기 목록 - Interview Connect</title>
+</head>
+
+<body>
+    <nav th:replace="~{fragments/layout :: navbar}"></nav>
+    <div th:replace="~{fragments/layout :: alerts}"></div>
+
+    <div class="container my-4">
+        <!-- 페이지 헤더 -->
+        <div class="row mb-4">
+            <div class="col-md-8">
+                <h1 class="h3 mb-0">
+                    <i class="fas fa-list text-primary"></i>
+                    면접 후기
+                </h1>
+                <p class="text-muted mt-2">실제 면접 경험자들이 공유하는 생생한 면접 후기를 확인해보세요.</p>
+            </div>
+            <div class="col-md-4 text-end">
+                <a th:href="@{/reviews/new}" class="btn btn-primary" sec:authorize="isAuthenticated()">
+                    <i class="fas fa-plus"></i> 후기 작성
+                </a>
+                <a th:href="@{/auth/login}" class="btn btn-outline-primary" sec:authorize="!isAuthenticated()">
+                    <i class="fas fa-sign-in-alt"></i> 로그인하고 후기 작성
+                </a>
+            </div>
+        </div>
+
+        <!-- 검색 필터 -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <form th:action="@{/reviews}" method="get" class="row g-3">
+                    <div class="col-md-3">
+                        <label for="companyId" class="form-label">회사</label>
+                        <select name="companyId" id="companyId" class="form-select">
+                            <option value="">전체 회사</option>
+                            <option th:each="company : ${companies}"
+                                    th:value="${company.id}"
+                                    th:text="${company.name}"
+                                    th:selected="${company.id == selectedCompanyId}">
+                                회사명
+                            </option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label for="position" class="form-label">직무</label>
+                        <input type="text" class="form-control" id="position" name="position"
+                               th:value="${selectedPosition}" placeholder="예: 백엔드 개발자">
+                    </div>
+
+                    <div class="col-md-2">
+                        <label for="difficulty" class="form-label">난이도</label>
+                        <select name="difficulty" id="difficulty" class="form-select">
+                            <option value="">전체</option>
+                            <option th:each="i : ${#numbers.sequence(1, 5)}"
+                                    th:value="${i}"
+                                    th:text="${i + '점'}"
+                                    th:selected="${i == selectedDifficulty}">
+                                1점
+                            </option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-2">
+                        <label for="result" class="form-label">결과</label>
+                        <select name="result" id="result" class="form-select">
+                            <option value="">전체</option>
+                            <option th:each="resultType : ${interviewResults}"
+                                    th:value="${resultType}"
+                                    th:text="${resultType.description}"
+                                    th:selected="${resultType == selectedResult}">
+                                합격
+                            </option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-2 d-flex align-items-end">
+                        <button type="submit" class="btn btn-outline-primary w-100">
+                            <i class="fas fa-search"></i> 검색
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- 후기 목록 -->
+        <div class="row">
+            <div th:if="${reviews.empty}" class="col-12">
+                <div class="text-center py-5">
+                    <i class="fas fa-search text-muted" style="font-size: 3rem;"></i>
+                    <h5 class="mt-3 text-muted">검색 결과가 없습니다</h5>
+                    <p class="text-muted">검색 조건을 변경하거나 새로운 후기를 작성해보세요.</p>
+                </div>
+            </div>
+
+            <div th:each="review : ${reviews.content}" class="col-lg-6 col-xl-4 mb-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <!-- 회사명과 직무 -->
+                        <h5 class="card-title mb-2">
+                            <a th:href="@{/reviews/{id}(id=${review.id})}" class="text-decoration-none">
+                                <span th:text="${review.companyName}" class="text-primary">회사명</span>
+                            </a>
+                        </h5>
+                        <p class="text-muted mb-3">
+                            <i class="fas fa-briefcase"></i>
+                            <span th:text="${review.position}">백엔드 개발자</span>
+                        </p>
+
+                        <!-- 면접 정보 -->
+                        <div class="row mb-3">
+                            <div class="col-6">
+                                <small class="text-muted">난이도</small><br>
+                                <div class="d-flex">
+                                    <i th:each="i : ${#numbers.sequence(1, 5)}"
+                                       th:class="${i <= review.difficulty ? 'fas fa-star text-warning' : 'far fa-star text-muted'}">
+                                    </i>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <small class="text-muted">결과</small><br>
+                                <span th:text="${review.result.description}"
+                                      th:class="${review.result.name() == 'PASS' ? 'badge bg-success' : 'badge bg-danger'}">
+                                    합격
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- 면접 유형 -->
+                        <div class="mb-3">
+                            <small class="text-muted">면접 유형</small><br>
+                            <span th:each="type : ${review.interviewTypes}"
+                                  class="badge bg-light text-dark me-1"
+                                  th:text="${type.description}">
+                                기술면접
+                            </span>
+                        </div>
+
+                        <!-- 미리보기 내용 -->
+                        <p class="card-text text-muted small" th:text="${#strings.abbreviate(review.content, 80)}">
+                            면접 후기 내용 미리보기...
+                        </p>
+                    </div>
+
+                    <div class="card-footer bg-transparent">
+                        <div class="row align-items-center">
+                            <div class="col">
+                                <small class="text-muted">
+                                    <i class="fas fa-calendar"></i>
+                                    <span th:text="${#temporals.format(review.interviewDate, 'yyyy.MM.dd')}">2024.01.15</span>
+                                </small>
+                            </div>
+                            <div class="col-auto">
+                                <small class="text-muted">
+                                    <i class="fas fa-eye"></i>
+                                    <span th:text="${review.viewCount}">123</span>
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 페이지네이션 -->
+        <nav th:if="${reviews.totalPages > 1}" aria-label="Page navigation">
+            <ul class="pagination justify-content-center">
+                <li th:class="${reviews.first} ? 'page-item disabled' : 'page-item'">
+                    <a class="page-link" th:href="@{/reviews(page=${reviews.number - 1}, size=${reviews.size})}">이전</a>
+                </li>
+
+                <li th:each="pageNum : ${#numbers.sequence(0, reviews.totalPages - 1)}"
+                    th:class="${pageNum == reviews.number} ? 'page-item active' : 'page-item'"
+                    th:if="${pageNum >= reviews.number - 2 and pageNum <= reviews.number + 2}">
+                    <a class="page-link" th:href="@{/reviews(page=${pageNum}, size=${reviews.size})}"
+                       th:text="${pageNum + 1}">1</a>
+                </li>
+
+                <li th:class="${reviews.last} ? 'page-item disabled' : 'page-item'">
+                    <a class="page-link" th:href="@{/reviews(page=${reviews.number + 1}, size=${reviews.size})}">다음</a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+
+    <footer th:replace="~{fragments/layout :: footer}"></footer>
+    <div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>

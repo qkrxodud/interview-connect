@@ -1,0 +1,158 @@
+server:
+  port: 8081
+
+spring:
+  profiles:
+    active: local
+  application:
+    name: interview-connect-api
+
+---
+# Local Development Profile
+spring:
+  config:
+    activate:
+      on-profile: local
+
+  datasource:
+    url: jdbc:h2:mem:tradingdb
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+    defer-datasource-initialization: true
+    properties:
+      hibernate:
+        format_sql: true
+        use_sql_comments: true
+        dialect: org.hibernate.dialect.H2Dialect
+
+  sql:
+    init:
+      mode: always
+
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      timeout: 3000ms
+
+  security:
+    user:
+      name: admin
+      password: admin
+
+jwt:
+  secret: interview-connect-secret-key-for-local-development-only-must-change-in-production
+  access-token-expire-time: 7200000  # 2시간 (밀리초)
+  refresh-token-expire-time: 604800000  # 7일 (밀리초)
+
+logging:
+  level:
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+    com.ic: DEBUG
+
+---
+# Development Profile
+spring:
+  config:
+    activate:
+      on-profile: dev
+
+  datasource:
+    url: ${DB_URL:jdbc:h2:mem:tradingdb_dev}
+    username: ${DB_USERNAME:sa}
+    password: ${DB_PASSWORD:}
+    driver-class-name: org.h2.Driver
+
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      timeout: 3000ms
+
+jwt:
+  secret: ${JWT_SECRET}
+  access-token-expire-time: ${JWT_ACCESS_EXPIRE:1800000}
+  refresh-token-expire-time: ${JWT_REFRESH_EXPIRE:604800000}
+
+logging:
+  level:
+    com.ic: INFO
+
+---
+# Production Profile
+spring:
+  config:
+    activate:
+      on-profile: prod
+
+  datasource:
+    url: ${DB_URL:jdbc:h2:mem:tradingdb_prod}
+    username: ${DB_USERNAME:sa}
+    password: ${DB_PASSWORD:}
+    driver-class-name: ${DB_DRIVER_CLASS:org.h2.Driver}
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+      idle-timeout: 300000
+      max-lifetime: 1200000
+
+  h2:
+    console:
+      enabled: ${H2_CONSOLE_ENABLED:false}
+      path: /h2-console
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: ${DB_DIALECT:org.hibernate.dialect.H2Dialect}
+
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
+      password: ${REDIS_PASSWORD}
+      timeout: 3000ms
+      lettuce:
+        pool:
+          max-active: 10
+          max-idle: 10
+          min-idle: 2
+
+jwt:
+  secret: ${JWT_SECRET}
+  access-token-expire-time: ${JWT_ACCESS_EXPIRE:1800000}
+  refresh-token-expire-time: ${JWT_REFRESH_EXPIRE:604800000}
+
+logging:
+  level:
+    root: WARN
+    com.ic: INFO

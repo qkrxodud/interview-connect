@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/layout :: head}">
+    <title>내 후기 목록 - Interview Connect</title>
+</head>
+
+<body>
+    <nav th:replace="~{fragments/layout :: navbar}"></nav>
+    <div th:replace="~{fragments/layout :: alerts}"></div>
+
+    <div class="container my-4">
+        <!-- 페이지 헤더 -->
+        <div class="row mb-4">
+            <div class="col-md-8">
+                <h1 class="h3 mb-0">
+                    <i class="fas fa-user text-primary"></i>
+                    내가 작성한 후기
+                </h1>
+                <p class="text-muted mt-2">작성하신 면접 후기들을 관리하실 수 있습니다.</p>
+            </div>
+            <div class="col-md-4 text-end">
+                <a th:href="@{/reviews/new}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> 새 후기 작성
+                </a>
+                <a th:href="@{/reviews}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left"></i> 전체 후기
+                </a>
+            </div>
+        </div>
+
+        <!-- 후기 목록 -->
+        <div class="row">
+            <div th:if="${reviews.empty}" class="col-12">
+                <div class="text-center py-5">
+                    <i class="fas fa-edit text-muted" style="font-size: 3rem;"></i>
+                    <h5 class="mt-3 text-muted">작성하신 후기가 없습니다</h5>
+                    <p class="text-muted">첫 번째 면접 후기를 작성해보세요!</p>
+                    <a th:href="@{/reviews/new}" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> 후기 작성하기
+                    </a>
+                </div>
+            </div>
+
+            <div th:each="review : ${reviews}" class="col-lg-6 col-xl-4 mb-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <!-- 회사명과 직무 -->
+                        <h5 class="card-title mb-2">
+                            <a th:href="@{/reviews/{id}(id=${review.id})}" class="text-decoration-none">
+                                <span th:text="${review.companyName}" class="text-primary">회사명</span>
+                            </a>
+                        </h5>
+                        <p class="text-muted mb-3">
+                            <i class="fas fa-briefcase"></i>
+                            <span th:text="${review.position}">백엔드 개발자</span>
+                        </p>
+
+                        <!-- 면접 정보 -->
+                        <div class="row mb-3">
+                            <div class="col-6">
+                                <small class="text-muted">난이도</small><br>
+                                <div class="d-flex">
+                                    <i th:each="i : ${#numbers.sequence(1, 5)}"
+                                       th:class="${i <= review.difficulty ? 'fas fa-star text-warning' : 'far fa-star text-muted'}">
+                                    </i>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <small class="text-muted">결과</small><br>
+                                <span th:text="${review.result.description}"
+                                      th:class="${review.result.name() == 'PASS' ? 'badge bg-success' : 'badge bg-danger'}">
+                                    합격
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- 면접 유형 -->
+                        <div class="mb-3">
+                            <small class="text-muted">면접 유형</small><br>
+                            <span th:each="type : ${review.interviewTypes}"
+                                  class="badge bg-light text-dark me-1"
+                                  th:text="${type}">
+                                기술면접
+                            </span>
+                        </div>
+
+                        <!-- 미리보기 내용 -->
+                        <p class="card-text text-muted small" th:text="${#strings.abbreviate(review.content, 80)}">
+                            면접 후기 내용 미리보기...
+                        </p>
+                    </div>
+
+                    <div class="card-footer bg-transparent">
+                        <div class="row align-items-center">
+                            <div class="col">
+                                <small class="text-muted">
+                                    <i class="fas fa-calendar"></i>
+                                    <span th:text="${#temporals.format(review.interviewDate, 'yyyy.MM.dd')}">2024.01.15</span>
+                                </small>
+                            </div>
+                            <div class="col-auto">
+                                <small class="text-muted">
+                                    <i class="fas fa-eye"></i>
+                                    <span th:text="${review.viewCount}">123</span>
+                                </small>
+                            </div>
+                        </div>
+
+                        <!-- 관리 버튼들 -->
+                        <div class="mt-2">
+                            <div class="btn-group w-100" role="group">
+                                <a th:href="@{/reviews/{id}(id=${review.id})}" class="btn btn-outline-primary btn-sm">
+                                    <i class="fas fa-eye"></i> 보기
+                                </a>
+                                <a th:href="@{/reviews/{id}/edit(id=${review.id})}" class="btn btn-outline-secondary btn-sm">
+                                    <i class="fas fa-edit"></i> 수정
+                                </a>
+                                <button type="button" class="btn btn-outline-danger btn-sm"
+                                        data-bs-toggle="modal" th:data-bs-target="${'#deleteModal' + review.id}">
+                                    <i class="fas fa-trash"></i> 삭제
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 삭제 확인 모달 -->
+                <div class="modal fade" th:id="${'deleteModal' + review.id}" tabindex="-1"
+                     th:aria-labelledby="${'deleteModalLabel' + review.id}" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" th:id="${'deleteModalLabel' + review.id}">후기 삭제 확인</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body">
+                                <p><strong th:text="${review.companyName + ' ' + review.position}">카카오 백엔드 개발자</strong> 후기를 정말로 삭제하시겠습니까?</p>
+                                <p class="text-danger small">삭제된 후기는 복구할 수 없습니다.</p>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+                                <form th:action="@{/reviews/{id}/delete(id=${review.id})}" method="post" style="display: inline;">
+                                    <button type="submit" class="btn btn-danger">삭제</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 통계 정보 -->
+        <div th:if="${!reviews.empty}" class="row mt-5">
+            <div class="col-12">
+                <div class="card bg-light">
+                    <div class="card-body text-center">
+                        <h6 class="card-title">
+                            <i class="fas fa-chart-bar text-primary"></i>
+                            내 후기 통계
+                        </h6>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="h4 text-primary" th:text="${reviews.size()}">5</div>
+                                <small class="text-muted">작성한 후기</small>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="h4 text-success" th:text="${#lists.size(#lists.select(reviews, 'result.name() == \"PASS\"'))}">3</div>
+                                <small class="text-muted">합격 후기</small>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="h4 text-info" th:text="${#aggregates.sum(reviews, 'viewCount')}">1,250</div>
+                                <small class="text-muted">총 조회수</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer th:replace="~{fragments/layout :: footer}"></footer>
+    <div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>

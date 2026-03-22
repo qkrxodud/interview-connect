@@ -1,0 +1,6 @@
+rootProject.name = 'interview-connect'
+
+include 'ic-api'
+include 'ic-domain'
+include 'ic-infra'
+include 'ic-common'

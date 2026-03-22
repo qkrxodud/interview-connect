@@ -1,0 +1,35 @@
+// ic-domain: 도메인 계층 모듈 (ic-common에만 의존)
+
+dependencies {
+    implementation project(':ic-common')
+
+    // Spring Data JPA
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+
+    // Validation
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+
+    // Jackson for JSON processing
+    implementation 'com.fasterxml.jackson.core:jackson-databind'
+
+    // Test
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.assertj:assertj-core'
+    testImplementation('com.github.javafaker:javafaker:1.0.2') {
+        exclude group: 'org.yaml', module: 'snakeyaml'
+    }
+
+    // Test dependencies from other modules
+    testImplementation project(':ic-common').sourceSets.test.output
+}
+
+// 빌드 결과물이 JAR 형태로 생성되도록 설정
+jar {
+    enabled = true
+    archiveClassifier = ''
+}
+
+// Spring Boot fat jar 비활성화 (라이브러리 모듈)
+bootJar {
+    enabled = false
+}

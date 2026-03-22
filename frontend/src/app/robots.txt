@@ -1,0 +1,21 @@
+User-agent: *
+Allow: /
+
+# SEO-friendly pages
+Allow: /reviews
+Allow: /companies
+Allow: /reviews/*
+Allow: /companies/*
+
+# Block sensitive areas
+Disallow: /auth/
+Disallow: /api/
+Disallow: /admin/
+Disallow: /_next/
+Disallow: /*.json$
+
+# Sitemap location
+Sitemap: https://interview-connect.com/sitemap.xml
+
+# Crawl-delay for respectful crawling
+Crawl-delay: 1
