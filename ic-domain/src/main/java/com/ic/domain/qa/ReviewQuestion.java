@@ -72,6 +72,14 @@ public class ReviewQuestion {
         return answers.size();
     }
 
+    public InterviewReview getReview() {
+        return this.interviewReview;
+    }
+
+    public Member getMember() {
+        return this.questioner;
+    }
+
     private void validateContent(final String content) {
         if (Objects.isNull(content) || content.trim().isEmpty()) {
             throw new IllegalArgumentException("질문 내용은 필수입니다");

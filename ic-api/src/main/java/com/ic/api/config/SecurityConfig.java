@@ -96,7 +96,7 @@ public class SecurityConfig {
                 // 로그아웃 설정
                 .logout(logout -> logout
                         .logoutUrl("/auth/logout")
-                        .logoutSuccessUrl("/reviews?message=로그아웃되었습니다")
+                        .logoutSuccessUrl("/auth/logout-success")
                         .invalidateHttpSession(true)
                         .deleteCookies("JSESSIONID", "remember-me")
                         .permitAll()

@@ -164,11 +164,11 @@
                                 <small class="text-muted">작성한 후기</small>
                             </div>
                             <div class="col-md-4">
-                                <div class="h4 text-success" th:text="${#lists.size(#lists.select(reviews, 'result.name() == \"PASS\"'))}">3</div>
+                                <div class="h4 text-success">-</div>
                                 <small class="text-muted">합격 후기</small>
                             </div>
                             <div class="col-md-4">
-                                <div class="h4 text-info" th:text="${#aggregates.sum(reviews, 'viewCount')}">1,250</div>
+                                <div class="h4 text-info">-</div>
                                 <small class="text-muted">총 조회수</small>
                             </div>
                         </div>

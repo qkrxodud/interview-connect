@@ -72,7 +72,12 @@
       "Bash(git remote add origin https://github.com/qkrxodud/interview-connect.git)",
       "Bash(git add .)",
       "Bash(git rm --cached frontend)",
-      "Bash(git rm --cached -f frontend)"
+      "Bash(git rm --cached -f frontend)",
+      "Bash(git commit -m \"$(cat <<''EOF''\nInitial project setup for Interview Connect\n\n- Multi-module Spring Boot project structure\n- Domain, API, Infrastructure separation\n- Next.js frontend ready for Phase 1 Week 4\n- Project documentation and development guidelines\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
+      "Bash(git push -u origin main)",
+      "Bash(JAVA_HOME=/Library/Java/JavaVirtualMachines/zulu-17.jdk/Contents/Home ./gradlew :ic-api:test --no-daemon)",
+      "Bash(JAVA_HOME=/Library/Java/JavaVirtualMachines/zulu-17.jdk/Contents/Home ./gradlew :ic-api:test --tests=\"com.ic.api.auth.controller.AuthControllerIntegrationTest\" --info --no-daemon)",
+      "Bash(xargs cat)"
     ],
     "deny": [],
     "ask": []

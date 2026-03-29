@@ -16,8 +16,17 @@ public record SignupRequest(
         @Size(min = 8, max = 20, message = "비밀번호는 8자 이상 20자 이하여야 합니다")
         String password,
 
+        @NotBlank(message = "비밀번호 확인은 필수입니다")
+        String passwordConfirm,
+
         @NotBlank(message = "닉네임은 필수입니다")
         @Size(min = 2, max = 30, message = "닉네임은 2자 이상 30자 이하여야 합니다")
         String nickname
 ) {
+    /**
+     * 비밀번호 일치 여부 확인
+     */
+    public boolean isPasswordMatched() {
+        return password != null && password.equals(passwordConfirm);
+    }
 }

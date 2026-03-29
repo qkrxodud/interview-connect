@@ -25,9 +25,10 @@ public class AuthenticationArgumentResolver implements HandlerMethodArgumentReso
 
     @Override
     public boolean supportsParameter(MethodParameter parameter) {
-        // @AuthMember 어노테이션이 있고 CustomUserDetails 타입인 파라미터를 지원
+        // @AuthMember 어노테이션이 있고 CustomUserDetails 또는 Long 타입인 파라미터를 지원
         return parameter.hasParameterAnnotation(AuthMember.class) &&
-               parameter.getParameterType().equals(CustomUserDetails.class);
+               (parameter.getParameterType().equals(CustomUserDetails.class) ||
+                parameter.getParameterType().equals(Long.class));
     }
 
     @Override
@@ -60,7 +61,13 @@ public class AuthenticationArgumentResolver implements HandlerMethodArgumentReso
             try {
                 final Long memberId = Long.valueOf((String) principal);
 
-                // CustomUserDetailsService를 통해 회원 정보 조회
+                // Long 타입을 요구하는 경우 memberId만 반환
+                if (parameter.getParameterType().equals(Long.class)) {
+                    log.debug("Resolved authenticated member ID: {}", memberId);
+                    return memberId;
+                }
+
+                // CustomUserDetails 타입을 요구하는 경우
                 final CustomUserDetails userDetails = customUserDetailsService.loadUserById(memberId);
                 log.debug("Resolved authenticated member: memberId={}, email={}",
                          userDetails.getMemberId(), userDetails.getEmail());
@@ -78,7 +85,14 @@ public class AuthenticationArgumentResolver implements HandlerMethodArgumentReso
 
         // Principal이 이미 CustomUserDetails인 경우
         if (principal instanceof CustomUserDetails) {
-            return principal;
+            final CustomUserDetails userDetails = (CustomUserDetails) principal;
+
+            // Long 타입을 요구하는 경우 memberId만 반환
+            if (parameter.getParameterType().equals(Long.class)) {
+                return userDetails.getMemberId();
+            }
+
+            return userDetails;
         }
 
         // 기타 경우

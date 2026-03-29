@@ -3,6 +3,7 @@ package com.ic.api.auth.service;
 import com.ic.api.auth.dto.*;
 import com.ic.common.exception.BusinessException;
 import com.ic.common.exception.ErrorCode;
+import com.ic.domain.member.EmailService;
 import com.ic.domain.member.Member;
 import com.ic.domain.member.MemberRepository;
 import com.ic.domain.member.MemberRole;
@@ -29,6 +30,7 @@ public class AuthService {
     private final RefreshTokenRepository refreshTokenRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
+    private final EmailService emailService;
 
     /**
      * 회원가입을 처리합니다.
@@ -44,7 +46,15 @@ public class AuthService {
 
         final String encodedPassword = passwordEncoder.encode(request.password());
         final Member member = Member.createGeneral(request.email(), encodedPassword, request.nickname());
+
+        // 이메일 인증 코드 생성 및 설정
+        final String verificationCode = emailService.generateVerificationCode();
+        member.setVerificationCode(verificationCode);
+
         final Member savedMember = memberRepository.save(member);
+
+        // 인증 이메일 발송
+        emailService.sendVerificationEmail(savedMember.getEmail(), verificationCode);
 
         return createSignupResponse(savedMember);
     }
@@ -60,6 +70,11 @@ public class AuthService {
     public LoginResponse login(final LoginRequest request) {
         final Member member = findMemberByEmail(request.email());
         validatePassword(request.password(), member.getPassword());
+
+        // 이메일 인증 여부 확인
+        if (!member.isEmailVerified()) {
+            throw BusinessException.of(ErrorCode.INVALID_INPUT, "이메일 인증이 완료되지 않았습니다. 이메일을 확인해주세요.");
+        }
 
         final String accessToken = jwtTokenProvider.generateAccessToken(member.getId(), member.getRole());
         final String refreshToken = jwtTokenProvider.generateRefreshToken(member.getId());
@@ -98,6 +113,46 @@ public class AuthService {
     @Transactional
     public void logout(final Long memberId) {
         refreshTokenRepository.deleteByMemberId(memberId);
+    }
+
+    /**
+     * 이메일 인증을 처리합니다.
+     *
+     * @param email 이메일
+     * @param code 인증 코드
+     * @throws BusinessException 인증 코드가 유효하지 않은 경우
+     */
+    @Transactional
+    public void verifyEmail(final String email, final String code) {
+        final Member member = findMemberByEmail(email);
+
+        if (!member.isVerificationCodeValid(code)) {
+            throw BusinessException.of(ErrorCode.INVALID_INPUT, "인증 코드가 유효하지 않거나 만료되었습니다.");
+        }
+
+        member.verifyEmail();
+        memberRepository.save(member);
+    }
+
+    /**
+     * 인증 코드를 재발송합니다.
+     *
+     * @param email 이메일
+     * @throws BusinessException 회원이 존재하지 않거나 이미 인증된 경우
+     */
+    @Transactional
+    public void resendVerificationCode(final String email) {
+        final Member member = findMemberByEmail(email);
+
+        if (member.isEmailVerified()) {
+            throw BusinessException.of(ErrorCode.INVALID_INPUT, "이미 인증된 이메일입니다.");
+        }
+
+        final String newVerificationCode = emailService.generateVerificationCode();
+        member.setVerificationCode(newVerificationCode);
+        memberRepository.save(member);
+
+        emailService.sendVerificationEmail(email, newVerificationCode);
     }
 
     // === Private Helper Methods ===

@@ -58,7 +58,7 @@ class AuthServiceTest extends ServiceTestBase {
                 jwtTokenProvider
         );
 
-        signupRequest = new SignupRequest("test@example.com", "password123", "테스트");
+        signupRequest = new SignupRequest("test@example.com", "password123", "password123", "테스트");
         loginRequest = new LoginRequest("test@example.com", "password123");
         member = Member.createGeneral("test@example.com", "encodedPassword", "테스트");
     }

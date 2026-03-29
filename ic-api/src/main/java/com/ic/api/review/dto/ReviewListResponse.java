@@ -5,6 +5,7 @@ import com.ic.domain.review.InterviewReview;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * 면접 후기 목록 응답 DTO (간소화된 정보)
@@ -16,9 +17,11 @@ public record ReviewListResponse(
         String memberNickname,
         LocalDate interviewDate,
         String position,
+        List<String> interviewTypes,
         int difficulty,
         int atmosphere,
         InterviewResult result,
+        String content,
         long viewCount,
         LocalDateTime createdAt
 ) {
@@ -31,9 +34,11 @@ public record ReviewListResponse(
                 review.getMember().getNickname(),
                 review.getInterviewDate(),
                 review.getPosition(),
+                review.getInterviewTypes(),
                 review.getDifficulty(),
                 review.getAtmosphere(),
                 review.getResult(),
+                review.getContent(),
                 review.getViewCount(),
                 review.getCreatedAt()
         );

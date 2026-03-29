@@ -74,6 +74,24 @@ public class AuthController {
     }
 
     /**
+     * 이메일 인증
+     */
+    @PostMapping("/verify-email")
+    public ApiResponse<Void> verifyEmail(@RequestBody @Valid EmailVerificationRequest request) {
+        authService.verifyEmail(request.email(), request.code());
+        return ApiResponse.ok();
+    }
+
+    /**
+     * 인증 코드 재발송
+     */
+    @PostMapping("/resend-code")
+    public ApiResponse<Void> resendVerificationCode(@RequestBody @Valid ResendCodeRequest request) {
+        authService.resendVerificationCode(request.email());
+        return ApiResponse.ok();
+    }
+
+    /**
      * 현재 로그인한 회원 정보 조회 (@AuthMember 어노테이션 테스트용)
      */
     @GetMapping("/profile")

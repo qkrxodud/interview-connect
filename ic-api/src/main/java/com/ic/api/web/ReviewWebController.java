@@ -242,7 +242,18 @@ public class ReviewWebController {
                 .map(ReviewListResponse::from)
                 .toList();
 
+        // 통계 계산
+        final long passCount = reviews.stream()
+                .mapToLong(review -> review.getResult() == InterviewResult.PASS ? 1 : 0)
+                .sum();
+
+        final long totalViewCount = reviews.stream()
+                .mapToLong(InterviewReview::getViewCount)
+                .sum();
+
         model.addAttribute("reviews", reviewResponses);
+        model.addAttribute("passCount", passCount);
+        model.addAttribute("totalViewCount", totalViewCount);
         return "reviews/my-reviews";
     }
 

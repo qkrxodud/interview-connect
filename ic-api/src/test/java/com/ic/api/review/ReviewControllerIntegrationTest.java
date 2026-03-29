@@ -1,6 +1,9 @@
 package com.ic.api.review;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.ic.api.integration.config.IntegrationTestFakesConfig;
+import com.ic.api.integration.config.TestApplicationConfig;
+import com.ic.api.integration.config.TestSecurityConfig;
 import com.ic.api.review.dto.ReviewCreateRequest;
 import com.ic.api.review.dto.ReviewUpdateRequest;
 import com.ic.common.response.ApiResponse;
@@ -10,8 +13,10 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDate;
@@ -25,6 +30,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * 면접 후기 컨트롤러 통합 테스트
  */
 @SpringBootTest
+@ActiveProfiles("test")
+@Import({IntegrationTestFakesConfig.class, TestApplicationConfig.class, TestSecurityConfig.class})
 @AutoConfigureMockMvc
 @DisplayName("면접 후기 컨트롤러 통합 테스트")
 class ReviewControllerIntegrationTest {

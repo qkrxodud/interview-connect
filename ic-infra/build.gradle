@@ -21,6 +21,9 @@ dependencies {
     // Spring Data JPA
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 
+    // Mail
+    implementation 'org.springframework.boot:spring-boot-starter-mail'
+
     // H2 Database (로컬 개발용)
     runtimeOnly 'com.h2database:h2'
 

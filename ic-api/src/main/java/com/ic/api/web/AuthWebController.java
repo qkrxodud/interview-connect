@@ -57,7 +57,7 @@ public class AuthWebController {
      */
     @GetMapping("/signup")
     public String signupForm(Model model) {
-        model.addAttribute("signupRequest", new SignupRequest("", "", ""));
+        model.addAttribute("signupRequest", new SignupRequest("", "", "", ""));
         return "auth/signup";
     }
 
@@ -79,11 +79,19 @@ public class AuthWebController {
             return "auth/signup";
         }
 
+        // 비밀번호 일치 여부 확인
+        if (!signupRequest.isPasswordMatched()) {
+            log.debug("비밀번호가 일치하지 않음: {}", signupRequest.email());
+            model.addAttribute("error", "비밀번호가 일치하지 않습니다.");
+            return "auth/signup";
+        }
+
         try {
             authService.signup(signupRequest);
             log.info("회원가입 성공: {}", signupRequest.email());
-            redirectAttributes.addFlashAttribute("message", "회원가입이 완료되었습니다. 로그인해주세요.");
-            return "redirect:/auth/login";
+            redirectAttributes.addFlashAttribute("message", "회원가입이 완료되었습니다. 이메일을 확인하여 인증을 완료해주세요.");
+            redirectAttributes.addFlashAttribute("email", signupRequest.email());
+            return "redirect:/auth/verify-email";
 
         } catch (BusinessException e) {
             log.warn("회원가입 실패: {} - {}", signupRequest.email(), e.getMessage());
@@ -98,10 +106,66 @@ public class AuthWebController {
     }
 
     /**
+     * 이메일 인증 페이지
+     */
+    @GetMapping("/verify-email")
+    public String verifyEmailForm(@RequestParam(required = false) String email, Model model) {
+        model.addAttribute("email", email);
+        return "auth/verify-email";
+    }
+
+    /**
+     * 이메일 인증 처리
+     */
+    @PostMapping("/verify-email")
+    public String verifyEmail(
+            @RequestParam String email,
+            @RequestParam String code,
+            RedirectAttributes redirectAttributes) {
+
+        try {
+            authService.verifyEmail(email, code);
+            log.info("이메일 인증 성공: {}", email);
+            redirectAttributes.addFlashAttribute("message", "이메일 인증이 완료되었습니다. 로그인해주세요.");
+            return "redirect:/auth/login";
+
+        } catch (BusinessException e) {
+            log.warn("이메일 인증 실패: {} - {}", email, e.getMessage());
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+            redirectAttributes.addFlashAttribute("email", email);
+            return "redirect:/auth/verify-email";
+        }
+    }
+
+    /**
+     * 인증 코드 재발송
+     */
+    @PostMapping("/resend-code")
+    public String resendVerificationCode(
+            @RequestParam String email,
+            RedirectAttributes redirectAttributes) {
+
+        try {
+            authService.resendVerificationCode(email);
+            log.info("인증 코드 재발송 성공: {}", email);
+            redirectAttributes.addFlashAttribute("message", "인증 코드가 재발송되었습니다.");
+            redirectAttributes.addFlashAttribute("email", email);
+            return "redirect:/auth/verify-email";
+
+        } catch (BusinessException e) {
+            log.warn("인증 코드 재발송 실패: {} - {}", email, e.getMessage());
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+            redirectAttributes.addFlashAttribute("email", email);
+            return "redirect:/auth/verify-email";
+        }
+    }
+
+    /**
      * 로그아웃 성공 페이지
      */
     @GetMapping("/logout-success")
-    public String logoutSuccess() {
-        return "redirect:/reviews?message=로그아웃되었습니다.";
+    public String logoutSuccess(RedirectAttributes redirectAttributes) {
+        redirectAttributes.addFlashAttribute("message", "로그아웃되었습니다.");
+        return "redirect:/reviews";
     }
 }

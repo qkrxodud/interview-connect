@@ -9,6 +9,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
 import java.util.Objects;
 
 /**
@@ -37,8 +38,18 @@ public class Member extends BaseTimeEntity {
     @Column(nullable = false, length = 20)
     private MemberRole role;
 
+    @Column(nullable = false)
+    private Boolean emailVerified;
+
+    @Column(length = 6)
+    private String verificationCode;
+
+    @Column
+    private LocalDateTime verificationCodeExpiry;
+
     @Builder
-    private Member(Long id, String email, String password, String nickname, MemberRole role) {
+    private Member(Long id, String email, String password, String nickname, MemberRole role,
+                  Boolean emailVerified, String verificationCode, LocalDateTime verificationCodeExpiry) {
         validateEmail(email);
         validatePassword(password);
         validateNickname(nickname);
@@ -48,6 +59,9 @@ public class Member extends BaseTimeEntity {
         this.password = password;
         this.nickname = nickname;
         this.role = Objects.nonNull(role) ? role : MemberRole.GENERAL;
+        this.emailVerified = Objects.nonNull(emailVerified) ? emailVerified : false;
+        this.verificationCode = verificationCode;
+        this.verificationCodeExpiry = verificationCodeExpiry;
     }
 
     /**
@@ -128,6 +142,50 @@ public class Member extends BaseTimeEntity {
      */
     public boolean canAnswerQuestion() {
         return role.canAnswerQuestion();
+    }
+
+    /**
+     * 이메일 인증 코드 설정
+     */
+    public void setVerificationCode(String code) {
+        this.verificationCode = code;
+        this.verificationCodeExpiry = LocalDateTime.now().plusHours(1); // 1시간 후 만료
+    }
+
+    /**
+     * 이메일 인증 처리
+     */
+    public void verifyEmail() {
+        this.emailVerified = true;
+        this.verificationCode = null;
+        this.verificationCodeExpiry = null;
+    }
+
+    /**
+     * 인증 코드 만료 여부 확인
+     */
+    public boolean isVerificationCodeExpired() {
+        if (Objects.isNull(verificationCodeExpiry)) {
+            return true;
+        }
+        return LocalDateTime.now().isAfter(verificationCodeExpiry);
+    }
+
+    /**
+     * 인증 코드 일치 여부 확인
+     */
+    public boolean isVerificationCodeValid(String code) {
+        if (Objects.isNull(verificationCode) || Objects.isNull(code)) {
+            return false;
+        }
+        return verificationCode.equals(code) && !isVerificationCodeExpired();
+    }
+
+    /**
+     * 이메일 인증 여부 확인
+     */
+    public boolean isEmailVerified() {
+        return Boolean.TRUE.equals(emailVerified);
     }
 
     // 검증 메서드들

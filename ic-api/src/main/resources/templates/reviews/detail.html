@@ -29,7 +29,7 @@
                     </div>
                     <div class="col-auto" sec:authorize="isAuthenticated()">
                         <!-- 본인 글인 경우에만 수정/삭제 버튼 표시 -->
-                        <div th:if="${#authentication.name == review.memberEmail}" class="btn-group">
+                        <div th:if="${#authentication.name == #strings.toString(review.memberId)}" class="btn-group">
                             <a th:href="@{/reviews/{id}/edit(id=${review.id})}" class="btn btn-outline-primary btn-sm">
                                 <i class="fas fa-edit"></i> 수정
                             </a>
@@ -81,7 +81,7 @@
                     <div>
                         <span th:each="type : ${review.interviewTypes}"
                               class="badge bg-primary me-2"
-                              th:text="${type.description}">
+                              th:text="${type}">
                             기술면접
                         </span>
                     </div>

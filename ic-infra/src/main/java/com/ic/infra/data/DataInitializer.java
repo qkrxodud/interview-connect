@@ -8,9 +8,13 @@ import com.ic.domain.member.MemberRole;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.ApplicationRunner;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
+import org.springframework.context.event.EventListener;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.List;
@@ -23,22 +27,54 @@ import java.util.List;
 @Configuration
 @RequiredArgsConstructor
 @Profile({"local", "dev"})
+@EnableAsync
 public class DataInitializer {
 
     private final CompanyRepository companyRepository;
 
-    @Bean
-    public ApplicationRunner initData() {
-        return args -> {
-            log.info("Starting seed data initialization...");
+    @EventListener(ApplicationReadyEvent.class)
+    @Async
+    public void initData() {
+        log.info("Application ready - starting seed data initialization...");
 
-            if (companyRepository.findAll().isEmpty()) {
-                initCompanies();
-                log.info("Seed data initialization completed successfully");
-            } else {
-                log.info("Seed data already exists, skipping initialization");
+        // 약간의 지연 후 초기화 시도 (스키마 생성 완료 대기)
+        try {
+            Thread.sleep(500);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            log.warn("Data initialization interrupted");
+            return;
+        }
+
+        int retryCount = 0;
+        int maxRetries = 5;
+
+        while (retryCount < maxRetries) {
+            try {
+                if (companyRepository.count() == 0) {
+                    initCompanies();
+                    log.info("Seed data initialization completed successfully");
+                } else {
+                    log.info("Seed data already exists, skipping initialization");
+                }
+                return; // 성공 시 종료
+            } catch (Exception e) {
+                retryCount++;
+                log.warn("Attempt {} failed to initialize seed data: {}", retryCount, e.getMessage());
+
+                if (retryCount < maxRetries) {
+                    try {
+                        Thread.sleep(1000 * retryCount); // 점진적 지연
+                    } catch (InterruptedException ie) {
+                        Thread.currentThread().interrupt();
+                        log.warn("Data initialization interrupted during retry");
+                        return;
+                    }
+                } else {
+                    log.error("Failed to initialize seed data after {} attempts. Tables may not be available.", maxRetries);
+                }
             }
-        };
+        }
     }
 
     private void initCompanies() {

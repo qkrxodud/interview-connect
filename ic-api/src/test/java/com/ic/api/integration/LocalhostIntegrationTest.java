@@ -1,11 +1,16 @@
 package com.ic.api.integration;
 
+import com.ic.api.integration.config.IntegrationTestFakesConfig;
+import com.ic.api.integration.config.TestApplicationConfig;
+import com.ic.api.integration.config.TestSecurityConfig;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.*;
+import org.springframework.test.context.ActiveProfiles;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -13,6 +18,8 @@ import static org.assertj.core.api.Assertions.assertThat;
  * localhost HTTP 요청 통합 테스트
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@ActiveProfiles("test")
+@Import({IntegrationTestFakesConfig.class, TestApplicationConfig.class, TestSecurityConfig.class})
 @DisplayName("localhost HTTP 요청 통합 테스트")
 class LocalhostIntegrationTest {
 
