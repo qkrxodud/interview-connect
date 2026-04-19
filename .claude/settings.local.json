@@ -77,7 +77,15 @@
       "Bash(git push -u origin main)",
       "Bash(JAVA_HOME=/Library/Java/JavaVirtualMachines/zulu-17.jdk/Contents/Home ./gradlew :ic-api:test --no-daemon)",
       "Bash(JAVA_HOME=/Library/Java/JavaVirtualMachines/zulu-17.jdk/Contents/Home ./gradlew :ic-api:test --tests=\"com.ic.api.auth.controller.AuthControllerIntegrationTest\" --info --no-daemon)",
-      "Bash(xargs cat)"
+      "Bash(xargs cat)",
+      "Bash(git push origin main --force)",
+      "Bash(mv AGENTS.md .claude/AGENTS.md)",
+      "Bash(mv ARCHITECTURE.md .claude/ARCHITECTURE.md)",
+      "Bash(mv SECURITY.md .claude/SECURITY.md)",
+      "Bash(mv QUALITY_SCORE.md .claude/QUALITY_SCORE.md)",
+      "Bash(mv PRODUCT_SENSE.md .claude/PRODUCT_SENSE.md)",
+      "Bash(grep \"\\\\.md$\")",
+      "Bash(ls /Users/taeyoung/Downloads/Interview-Connect/*.md)"
     ],
     "deny": [],
     "ask": []

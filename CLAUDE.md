@@ -1,5 +1,24 @@
 # CLAUDE.md — Interview Connect
 
+## 하네스: Interview Connect 개발
+
+**목표:** TDD 기반 설계→테스트→구현→리뷰 파이프라인으로 Interview Connect 기능을 자동 구현
+
+**트리거:** 기능 구현, 태스크 진행, 코드 작성 요청 시 `ic-dev-orchestrator` 스킬을 사용하라. 단순 질문이나 파일 읽기는 직접 응답 가능.
+
+**변경 이력:**
+| 날짜 | 변경 내용 | 대상 | 사유 |
+|------|----------|------|------|
+| 2026-04-19 | 초기 구성 | 전체 | 신규 하네스 구축 |
+| 2026-04-19 | product-analyst 에이전트 추가 | agents/product-analyst.md, ic-dev-orchestrator, ic-feature-impl | 비즈니스 룰 검증 역할 부재 — 구현 전 콘텐츠 접근제어·권한 스펙화 필요 |
+| 2026-04-19 | 참조 문서 .claude/로 이동 | AGENTS.md, ARCHITECTURE.md, SECURITY.md, QUALITY_SCORE.md, PRODUCT_SENSE.md, TDD_TEST_SUITE_SUMMARY.md | 에이전트 전용 문서를 .claude/ 폴더로 통합 |
+| 2026-04-19 | 문서 구조 확장 | docs/exec-plans/active/, docs/exec-plans/tech-debt-tracker.md, docs/product-specs/ | 주차별 실행 계획·기술 부채·기능 스펙 분리로 에이전트 참조 정확도 향상 |
+| 2026-04-19 | 파일 경로 오류 수정 | backend-implementer.md, code-reviewer.md | _workspace 파일 번호 불일치(02/03) BLOCKER 수정 |
+| 2026-04-19 | ic-weekly-task product-analyst 누락 수정 | ic-weekly-task/SKILL.md | 주간 태스크에서도 비즈니스 룰 검증 필요 |
+| 2026-04-19 | tdd-test-generator IC 컨텍스트 추가 | agents/tdd-test-generator.md | 팀 파이프라인 역할 명세 및 model opus로 통일 |
+
+---
+
 ## 프로젝트 개요
 
 면접 경험자와 구직자를 연결하는 플랫폼. 잡플래닛과 달리 "사람 간 연결"이 핵심 차별점.
