@@ -1,8 +1,6 @@
 package com.ic.domain.company;
 
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -22,10 +20,9 @@ public interface CompanyRepository extends JpaRepository<Company, Long> {
 
     /**
      * 회사명 포함 검색 (자동완성용)
-     * 최대 10건까지만 반환
+     * 최대 10건까지만 반환, 대소문자 무시
      */
-    @Query("SELECT c FROM Company c WHERE c.name LIKE %:keyword% ORDER BY c.name ASC")
-    List<Company> findByNameContaining(@Param("keyword") String keyword);
+    List<Company> findTop10ByNameContainingIgnoreCase(String keyword);
 
     /**
      * 회사명 존재 여부 확인

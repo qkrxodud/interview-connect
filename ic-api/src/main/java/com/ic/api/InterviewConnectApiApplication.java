@@ -7,8 +7,8 @@ import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
 @SpringBootApplication(scanBasePackages = "com.ic")
-@EntityScan(basePackages = {"com.ic.domain.member", "com.ic.domain.company", "com.ic.domain.review", "com.ic.domain.qa", "com.ic.domain.notification"})
-@EnableJpaRepositories(basePackages = {"com.ic.domain.member", "com.ic.domain.company", "com.ic.domain.review", "com.ic.domain.qa", "com.ic.domain.notification"})
+@EntityScan(basePackages = {"com.ic.domain.member", "com.ic.domain.company", "com.ic.domain.review", "com.ic.domain.qa", "com.ic.domain.notification", "com.ic.domain.comment"})
+@EnableJpaRepositories(basePackages = {"com.ic.domain.member", "com.ic.domain.company", "com.ic.domain.review", "com.ic.domain.qa", "com.ic.domain.notification", "com.ic.domain.comment"})
 @EnableJpaAuditing
 public class InterviewConnectApiApplication {
 

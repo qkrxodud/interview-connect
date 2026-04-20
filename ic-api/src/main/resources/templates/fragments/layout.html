@@ -3,7 +3,17 @@
 <head th:fragment="head">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title th:text="${title != null ? title + ' - Interview Connect' : 'Interview Connect'}">Interview Connect</title>
+    <title th:text="${title != null ? title + ' | Interview Connect' : 'Interview Connect'}">Interview Connect</title>
+
+    <!-- SEO 메타태그 -->
+    <meta th:if="${description != null}" name="description" th:content="${description}">
+    <meta th:if="${description == null}" name="description" content="실제 면접 경험자들이 공유하는 생생한 면접 후기 플랫폼">
+
+    <!-- OG 태그 -->
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Interview Connect">
+    <meta property="og:title" th:content="${title != null ? title + ' | Interview Connect' : 'Interview Connect'}">
+    <meta property="og:description" th:content="${description != null ? description : '실제 면접 경험자들이 공유하는 생생한 면접 후기 플랫폼'}">
 
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">

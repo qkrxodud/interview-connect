@@ -60,6 +60,7 @@ public class SecurityConfig {
                         // 비로그인 허용 API (핵심: SEO를 위한 후기 공개)
                         .requestMatchers(HttpMethod.GET, "/api/v1/reviews/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/companies/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/comments/**").permitAll()
 
                         // 인증 관련 페이지 및 API
                         .requestMatchers("/auth/**", "/api/v1/auth/**").permitAll()

@@ -26,7 +26,7 @@ public class MemberService {
      */
     public Member findById(Long memberId) {
         if (Objects.isNull(memberId)) {
-            throw BusinessException.from(ErrorCode.INVALID_INPUT);
+            throw BusinessException.from(ErrorCode.INVALID_INPUT_VALUE);
         }
         return memberRepository.findById(memberId)
                 .orElseThrow(() -> BusinessException.from(ErrorCode.MEMBER_NOT_FOUND));
@@ -37,7 +37,7 @@ public class MemberService {
      */
     public Member findByEmail(String email) {
         if (Objects.isNull(email) || email.trim().isEmpty()) {
-            throw BusinessException.from(ErrorCode.INVALID_INPUT);
+            throw BusinessException.from(ErrorCode.INVALID_INPUT_VALUE);
         }
         return memberRepository.findByEmail(email)
                 .orElseThrow(() -> BusinessException.from(ErrorCode.MEMBER_NOT_FOUND));
@@ -48,7 +48,7 @@ public class MemberService {
      */
     public void validateEmailNotDuplicated(String email) {
         if (Objects.isNull(email) || email.trim().isEmpty()) {
-            throw BusinessException.from(ErrorCode.INVALID_INPUT);
+            throw BusinessException.from(ErrorCode.INVALID_INPUT_VALUE);
         }
         if (memberRepository.existsByEmail(email)) {
             throw BusinessException.from(ErrorCode.DUPLICATE_EMAIL);
@@ -60,7 +60,7 @@ public class MemberService {
      */
     public void validateNicknameNotDuplicated(String nickname) {
         if (Objects.isNull(nickname) || nickname.trim().isEmpty()) {
-            throw BusinessException.from(ErrorCode.INVALID_INPUT);
+            throw BusinessException.from(ErrorCode.INVALID_INPUT_VALUE);
         }
         if (memberRepository.existsByNickname(nickname)) {
             throw BusinessException.from(ErrorCode.DUPLICATE_NICKNAME);
@@ -73,7 +73,7 @@ public class MemberService {
     @Transactional
     public void changeRole(Long memberId, MemberRole newRole) {
         if (Objects.isNull(memberId) || Objects.isNull(newRole)) {
-            throw BusinessException.from(ErrorCode.INVALID_INPUT);
+            throw BusinessException.from(ErrorCode.INVALID_INPUT_VALUE);
         }
 
         final Member member = findById(memberId);
@@ -91,7 +91,7 @@ public class MemberService {
         final Member member = findById(memberId);
 
         if (member.isVerified()) {
-            throw BusinessException.of(ErrorCode.INVALID_INPUT, "이미 인증된 회원입니다");
+            throw BusinessException.of(ErrorCode.INVALID_INPUT_VALUE, "이미 인증된 회원입니다");
         }
 
         member.changeRole(MemberRole.VERIFIED);
@@ -105,7 +105,7 @@ public class MemberService {
     @Transactional
     public void changeNickname(Long memberId, String newNickname) {
         if (Objects.isNull(memberId) || Objects.isNull(newNickname) || newNickname.trim().isEmpty()) {
-            throw BusinessException.from(ErrorCode.INVALID_INPUT);
+            throw BusinessException.from(ErrorCode.INVALID_INPUT_VALUE);
         }
 
         final Member member = findById(memberId);

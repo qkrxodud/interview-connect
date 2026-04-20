@@ -37,18 +37,24 @@ public enum ErrorCode {
     QUESTION_AUTHOR_MISMATCH(403, "Q004", "본인이 작성한 질문만 수정/삭제할 수 있습니다"),
     ANSWER_AUTHOR_MISMATCH(403, "Q005", "본인이 작성한 답변만 수정/삭제할 수 있습니다"),
 
+    // Comment (댓글 관련)
+    COMMENT_NOT_FOUND(404, "CM001", "댓글을 찾을 수 없습니다"),
+    COMMENT_PERMISSION_DENIED(403, "CM002", "본인의 댓글만 수정/삭제할 수 있습니다"),
+    COMMENT_ALREADY_DELETED(400, "CM003", "이미 삭제된 댓글입니다"),
+
     // Notification (알림 관련)
     NOTIFICATION_NOT_FOUND(404, "N001", "알림을 찾을 수 없습니다"),
     NOTIFICATION_PERMISSION_DENIED(403, "N002", "본인의 알림만 조회할 수 있습니다"),
 
     // Common (공통)
-    INVALID_INPUT(400, "G001", "입력값이 올바르지 않습니다"),
-    INTERNAL_ERROR(500, "G002", "서버 내부 오류가 발생했습니다"),
-    METHOD_NOT_ALLOWED(405, "G003", "허용되지 않은 HTTP 메서드입니다"),
-    RESOURCE_NOT_FOUND(404, "G004", "요청한 리소스를 찾을 수 없습니다"),
-    INVALID_REQUEST_FORMAT(400, "G005", "요청 형식이 올바르지 않습니다"),
-    MISSING_REQUIRED_PARAMETER(400, "G006", "필수 파라미터가 누락되었습니다"),
-    INVALID_PAGE_PARAMETER(400, "G007", "페이지 파라미터가 올바르지 않습니다");
+    INVALID_INPUT_VALUE(400, "G001", "입력값이 올바르지 않습니다"),
+    ACCESS_DENIED(403, "G002", "접근 권한이 없습니다"),
+    INTERNAL_ERROR(500, "G003", "서버 내부 오류가 발생했습니다"),
+    METHOD_NOT_ALLOWED(405, "G004", "허용되지 않은 HTTP 메서드입니다"),
+    RESOURCE_NOT_FOUND(404, "G005", "요청한 리소스를 찾을 수 없습니다"),
+    INVALID_REQUEST_FORMAT(400, "G006", "요청 형식이 올바르지 않습니다"),
+    MISSING_REQUIRED_PARAMETER(400, "G007", "필수 파라미터가 누락되었습니다"),
+    INVALID_PAGE_PARAMETER(400, "G008", "페이지 파라미터가 올바르지 않습니다");
 
     private final int status;
     private final String code;

@@ -9,8 +9,11 @@ import com.ic.domain.review.InterviewReviewRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.boot.autoconfigure.domain.EntityScan;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
+import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
 import java.time.LocalDate;
 import java.util.Arrays;
@@ -20,10 +23,15 @@ import static org.assertj.core.api.Assertions.*;
 /**
  * 간단한 JpaInterviewReviewRepository 통합 테스트
  */
-@SpringBootTest
-@Transactional
+@DataJpaTest
+@EnableJpaAuditing
+@EntityScan(basePackages = {"com.ic.domain", "com.ic.infra"})
+@EnableJpaRepositories(basePackages = {"com.ic.domain", "com.ic.infra"})
 @DisplayName("면접 후기 Repository 간단 테스트")
 class SimpleJpaInterviewReviewRepositoryTest {
+
+    @Autowired
+    private TestEntityManager entityManager;
 
     @Autowired
     private InterviewReviewRepository interviewReviewRepository;
@@ -38,11 +46,13 @@ class SimpleJpaInterviewReviewRepositoryTest {
                 .nickname("테스터")
                 .role(MemberRole.VERIFIED)
                 .build();
+        entityManager.persistAndFlush(회원);
 
         Company 회사 = Company.builder()
                 .name("테스트 회사")
                 .industry("IT")
                 .build();
+        entityManager.persistAndFlush(회사);
 
         InterviewReview 면접후기 = InterviewReview.create(
                 회원, 회사, LocalDate.of(2024, 1, 15),
@@ -66,16 +76,18 @@ class SimpleJpaInterviewReviewRepositoryTest {
     void 저장된_면접후기의_개수를_확인할_수_있다() {
         // given
         Member 회원 = Member.builder()
-                .email("test@example.com")
+                .email("test2@example.com")
                 .password("password123")
-                .nickname("테스터")
+                .nickname("테스터2")
                 .role(MemberRole.VERIFIED)
                 .build();
+        entityManager.persistAndFlush(회원);
 
         Company 회사 = Company.builder()
-                .name("테스트 회사")
+                .name("테스트 회사2")
                 .industry("IT")
                 .build();
+        entityManager.persistAndFlush(회사);
 
         InterviewReview 면접후기1 = InterviewReview.create(
                 회원, 회사, LocalDate.of(2024, 1, 15),

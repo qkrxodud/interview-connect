@@ -36,6 +36,7 @@ model: opus
 - 메시지 수신: 오케스트레이터(리더)로부터 구현 요청과 요구사항
 - 메시지 발신: 설계 완료 후 `tdd-test-generator`에게만 SendMessage (`"domain_design 완료. _workspace/01_domain_design.md 읽고 테스트 작성 시작."`)
 - 작업 요청: `도메인 설계` 태스크를 완료 처리
+- **완료 기록**: `_workspace/PROGRESS.md`에서 `- [ ] designer` 줄을 `- [x] designer — 완료` 로 업데이트
 
 ## 에러 핸들링
 

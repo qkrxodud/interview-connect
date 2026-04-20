@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.MethodParameter;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.support.WebDataBinderFactory;
 import org.springframework.web.context.request.NativeWebRequest;
@@ -80,6 +81,20 @@ public class AuthenticationArgumentResolver implements HandlerMethodArgumentReso
                     throw BusinessException.from(ErrorCode.UNAUTHORIZED);
                 }
                 return null;
+            }
+        }
+
+        // Principal이 UserDetails인 경우 (테스트용 @WithMockUser 등)
+        if (principal instanceof UserDetails userDetails) {
+            try {
+                final Long memberId = Long.valueOf(userDetails.getUsername());
+                if (parameter.getParameterType().equals(Long.class)) {
+                    log.debug("Resolved member ID from UserDetails username: {}", memberId);
+                    return memberId;
+                }
+                return customUserDetailsService.loadUserById(memberId);
+            } catch (NumberFormatException e) {
+                log.debug("UserDetails username is not a numeric memberId: {}", userDetails.getUsername());
             }
         }
 

@@ -10,6 +10,8 @@ import com.ic.domain.company.CompanyService;
 import com.ic.domain.review.InterviewResult;
 import com.ic.domain.review.InterviewReview;
 import com.ic.domain.review.service.ReviewService;
+import com.ic.domain.comment.Comment;
+import com.ic.domain.comment.service.CommentService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -20,6 +22,7 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.security.core.Authentication;
 
 import java.util.Arrays;
 import java.util.List;
@@ -34,6 +37,7 @@ public class ReviewWebController {
 
     private final ReviewService reviewService;
     private final CompanyService companyService;
+    private final CommentService commentService;
 
     /**
      * 후기 목록 페이지 (메인 페이지)
@@ -73,11 +77,37 @@ public class ReviewWebController {
      * 후기 상세 페이지
      */
     @GetMapping("/{reviewId}")
-    public String reviewDetail(@PathVariable Long reviewId, Model model) {
+    public String reviewDetail(@PathVariable Long reviewId, Model model, Authentication authentication) {
         final InterviewReview review = reviewService.getReview(reviewId);
         final ReviewResponse reviewResponse = ReviewResponse.from(review);
 
+        // 로그인 여부 및 사용자 ID 확인
+        final boolean isAuthenticated = (authentication != null && authentication.isAuthenticated() &&
+                                       !"anonymousUser".equals(authentication.getPrincipal()));
+
+        final Long currentUserId;
+        if (isAuthenticated && authentication.getPrincipal() instanceof com.ic.api.config.security.CustomUserDetails userDetails) {
+            currentUserId = userDetails.getMemberId();
+        } else {
+            currentUserId = null;
+        }
+
+        // 댓글 목록 조회 (가시성 권한 적용)
+        final List<Comment> comments = commentService.getCommentsByReviewIdWithViewerId(reviewId, currentUserId);
+        final long commentCount = commentService.getCommentCountByReviewId(reviewId);
+
+        // SEO 제목/설명 설정
+        final String pageTitle = reviewResponse.companyName() + " " + reviewResponse.position() + " 면접 후기 — 난이도 " + reviewResponse.difficulty() + "/5";
+        final String rawContent = reviewResponse.content() != null ? reviewResponse.content() : "";
+        final String description = rawContent.length() > 150 ? rawContent.substring(0, 150) + "..." : rawContent;
+
+        model.addAttribute("title", pageTitle);
+        model.addAttribute("description", description);
         model.addAttribute("review", reviewResponse);
+        model.addAttribute("comments", comments);
+        model.addAttribute("commentCount", commentCount);
+        model.addAttribute("isAuthenticated", isAuthenticated);
+        model.addAttribute("currentUserId", currentUserId);
         return "reviews/detail";
     }
 
@@ -230,6 +260,79 @@ public class ReviewWebController {
             redirectAttributes.addFlashAttribute("error", "후기 삭제 중 오류가 발생했습니다.");
             return "redirect:/reviews/" + reviewId;
         }
+    }
+
+    /**
+     * 댓글 작성 처리 (인증 필요)
+     */
+    @PostMapping("/{reviewId}/comments")
+    public String createComment(
+            @PathVariable Long reviewId,
+            @AuthMember Long memberId,
+            @RequestParam String content,
+            @RequestParam(required = false) String visibility,
+            RedirectAttributes redirectAttributes) {
+
+        try {
+            final com.ic.domain.comment.CommentVisibility commentVisibility =
+                "AUTHOR_ONLY".equals(visibility) ?
+                    com.ic.domain.comment.CommentVisibility.AUTHOR_ONLY :
+                    com.ic.domain.comment.CommentVisibility.PUBLIC;
+
+            commentService.createComment(memberId, reviewId, content, commentVisibility);
+            redirectAttributes.addFlashAttribute("message", "댓글이 성공적으로 작성되었습니다.");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "댓글 작성 중 오류가 발생했습니다.");
+        }
+
+        return "redirect:/reviews/" + reviewId;
+    }
+
+    /**
+     * 대댓글 작성 처리 (인증 필요)
+     */
+    @PostMapping("/{reviewId}/comments/{parentId}/replies")
+    public String createReply(
+            @PathVariable Long reviewId,
+            @PathVariable Long parentId,
+            @AuthMember Long memberId,
+            @RequestParam String content,
+            @RequestParam(required = false) String visibility,
+            RedirectAttributes redirectAttributes) {
+
+        try {
+            final com.ic.domain.comment.CommentVisibility commentVisibility =
+                "AUTHOR_ONLY".equals(visibility) ?
+                    com.ic.domain.comment.CommentVisibility.AUTHOR_ONLY :
+                    com.ic.domain.comment.CommentVisibility.PUBLIC;
+
+            commentService.createReply(memberId, reviewId, parentId, content, commentVisibility);
+            redirectAttributes.addFlashAttribute("message", "답글이 성공적으로 작성되었습니다.");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "답글 작성 중 오류가 발생했습니다.");
+        }
+
+        return "redirect:/reviews/" + reviewId;
+    }
+
+    /**
+     * 댓글 삭제 처리 (인증 필요, 본인만)
+     */
+    @PostMapping("/{reviewId}/comments/{commentId}/delete")
+    public String deleteComment(
+            @PathVariable Long reviewId,
+            @PathVariable Long commentId,
+            @AuthMember Long memberId,
+            RedirectAttributes redirectAttributes) {
+
+        try {
+            commentService.deleteComment(commentId, memberId);
+            redirectAttributes.addFlashAttribute("message", "댓글이 성공적으로 삭제되었습니다.");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "댓글 삭제 중 오류가 발생했습니다.");
+        }
+
+        return "redirect:/reviews/" + reviewId;
     }
 
     /**

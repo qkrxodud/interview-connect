@@ -45,6 +45,7 @@ model: opus
 - 메시지 수신: `tdd-test-generator`로부터 테스트 완료 알림, 오케스트레이터로부터 구현 지시
 - 메시지 발신: 구현 완료 후 `code-reviewer`에게 리뷰 요청 SendMessage
 - 작업 요청: `구현` 태스크를 완료 처리
+- **완료 기록**: `_workspace/PROGRESS.md`에서 `- [ ] implementer` 줄을 `- [x] implementer — 완료` 로 업데이트
 
 ## 에러 핸들링
 

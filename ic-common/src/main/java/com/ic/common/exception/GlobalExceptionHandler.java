@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.NoHandlerFoundException;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.util.Objects;
 
@@ -47,9 +48,9 @@ public class GlobalExceptionHandler {
         final FieldError fieldError = bindingResult.getFieldError();
         final String errorMessage = Objects.nonNull(fieldError)
             ? fieldError.getDefaultMessage()
-            : ErrorCode.INVALID_INPUT.getMessage();
+            : ErrorCode.INVALID_INPUT_VALUE.getMessage();
 
-        final ApiResponse<Void> response = ApiResponse.error(ErrorCode.INVALID_INPUT, errorMessage);
+        final ApiResponse<Void> response = ApiResponse.error(ErrorCode.INVALID_INPUT_VALUE, errorMessage);
         return ResponseEntity.badRequest().body(response);
     }
 
@@ -76,6 +77,17 @@ public class GlobalExceptionHandler {
 
         final ApiResponse<Void> response = ApiResponse.error(ErrorCode.METHOD_NOT_ALLOWED);
         return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).body(response);
+    }
+
+    /**
+     * 핸들러를 찾을 수 없음 예외 처리 (404 Not Found) - Spring Boot 3.2+
+     */
+    @ExceptionHandler(NoResourceFoundException.class)
+    public ResponseEntity<ApiResponse<Void>> handleNoResourceFoundException(NoResourceFoundException e) {
+        log.warn("No Resource Found Exception: {}", e.getMessage());
+
+        final ApiResponse<Void> response = ApiResponse.error(ErrorCode.RESOURCE_NOT_FOUND);
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
     }
 
     /**
@@ -110,7 +122,7 @@ public class GlobalExceptionHandler {
         log.warn("Argument Type Mismatch Exception: {}", e.getMessage());
 
         final String message = String.format("파라미터 '%s'의 타입이 올바르지 않습니다", e.getName());
-        final ApiResponse<Void> response = ApiResponse.error(ErrorCode.INVALID_INPUT, message);
+        final ApiResponse<Void> response = ApiResponse.error(ErrorCode.INVALID_INPUT_VALUE, message);
         return ResponseEntity.badRequest().body(response);
     }
 

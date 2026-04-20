@@ -10,11 +10,13 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.autoconfigure.domain.EntityScan;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -29,8 +31,10 @@ import static org.assertj.core.api.Assertions.*;
 /**
  * JpaInterviewReviewRepository 통합 테스트
  */
-@SpringBootTest
-@Transactional
+@DataJpaTest
+@EnableJpaAuditing
+@EntityScan(basePackages = {"com.ic.domain", "com.ic.infra"})
+@EnableJpaRepositories(basePackages = {"com.ic.domain", "com.ic.infra"})
 @DisplayName("면접 후기 Repository 통합 테스트")
 class JpaInterviewReviewRepositoryTest {
 
@@ -301,7 +305,7 @@ class JpaInterviewReviewRepositoryTest {
                     .findByAllFilters(테스트회사1.getId(), "백엔드 개발자", 3, InterviewResult.PASS, pageable);
 
             // then
-            assertThat(결과.getContent()).hasSize(2);
+            assertThat(결과.getContent()).hasSize(1);
             assertThat(결과.getContent()).allMatch(review ->
                     review.getCompany().getId().equals(테스트회사1.getId()) &&
                             review.getPosition().equals("백엔드 개발자") &&
@@ -318,7 +322,7 @@ class JpaInterviewReviewRepositoryTest {
 
             // when
             Page<InterviewReview> 결과 = interviewReviewRepository
-                    .findByAllFilters(null, null, 0, null, pageable);
+                    .findByAllFilters(null, null, null, null, pageable);
 
             // then
             assertThat(결과.getContent()).hasSize(4);

@@ -3,6 +3,7 @@ package com.ic.infra.redis;
 import com.ic.infra.jwt.JwtProperties;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Repository;
 
@@ -12,10 +13,12 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * Redis 기반 Refresh Token 저장소 구현체
+ * - redis.enabled=false 설정 시 비활성화 (테스트용)
  */
 @Slf4j
 @Repository
 @RequiredArgsConstructor
+@ConditionalOnProperty(name = "redis.enabled", havingValue = "true", matchIfMissing = true)
 public class RedisRefreshTokenRepository implements RefreshTokenRepository {
 
     private static final String KEY_PREFIX = "refresh:";

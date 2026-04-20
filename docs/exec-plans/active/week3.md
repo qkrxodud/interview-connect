@@ -20,7 +20,7 @@ Q&A 시스템을 완성한다. **답변 블러는 이 서비스의 핵심 전환
 
 ### ReviewQuestion 엔티티
 
-- [ ] `ReviewQuestion`
+- [x] `ReviewQuestion`
   - `@ManyToOne(LAZY)` review, asker(Member)
   - `content` (TEXT, not null)
   - `isAnonymous` (boolean, default false)
@@ -29,7 +29,7 @@ Q&A 시스템을 완성한다. **답변 블러는 이 서비스의 핵심 전환
 
 ### ReviewAnswer 엔티티
 
-- [ ] `ReviewAnswer`
+- [x] `ReviewAnswer`
   - `@ManyToOne(LAZY)` question, answerer(Member)
   - `content` (TEXT, not null)
   - Cascade: `question` 삭제 시 함께 삭제
@@ -37,9 +37,9 @@ Q&A 시스템을 완성한다. **답변 블러는 이 서비스의 핵심 전환
 
 ### Repository
 
-- [ ] `ReviewQuestionRepository`
+- [x] `ReviewQuestionRepository`
   - `List<ReviewQuestion> findByReviewIdOrderByCreatedAtAsc(Long reviewId)`
-- [ ] `ReviewAnswerRepository`
+- [x] `ReviewAnswerRepository`
   - `List<ReviewAnswer> findByQuestionIdOrderByCreatedAtAsc(Long questionId)`
 
 ---
@@ -80,7 +80,7 @@ Q&A 시스템을 완성한다. **답변 블러는 이 서비스의 핵심 전환
 
 ### API
 
-- [ ] `GET /api/v1/reviews/{reviewId}/qa` — Q&A 조회 (permitAll)
+- [x] `GET /api/v1/reviews/{reviewId}/qa` — Q&A 조회 (permitAll)
   - SecurityContext 인증 여부 확인:
     ```java
     boolean isAuthenticated = SecurityContextHolder.getContext()
@@ -106,12 +106,12 @@ Q&A 시스템을 완성한다. **답변 블러는 이 서비스의 핵심 전환
     }
     ```
 
-- [ ] `POST /api/v1/reviews/{reviewId}/questions` — 질문 작성 (로그인 필요)
+- [x] `POST /api/v1/reviews/{reviewId}/questions` — 질문 작성 (로그인 필요)
   - Request: `{ content, isAnonymous }`
   - 작성 후 → 후기 작성자에게 `NEW_QUESTION` 알림 생성
   - Response: `QuestionResponse` (questionId, content, ...)
 
-- [ ] `POST /api/v1/reviews/{reviewId}/questions/{questionId}/answers` — 답변 작성 (VERIFIED만)
+- [x] `POST /api/v1/reviews/{reviewId}/questions/{questionId}/answers` — 답변 작성 (VERIFIED만)
   - role.isVerified() 체크 → 아니면 ANSWER_PERMISSION_DENIED(403)
   - 작성 후 → 질문 작성자에게 `NEW_ANSWER` 알림 생성
   - Response: `AnswerResponse` (revealed 형태)
@@ -143,9 +143,9 @@ FakeRepository 사용 단위 테스트:
 
 ### Notification 엔티티
 
-- [ ] `NotificationType` enum: `NEW_QUESTION`, `NEW_ANSWER`, `CHAT_REQUEST`, `VERIFICATION_COMPLETE`
+- [x] `NotificationType` enum: `NEW_QUESTION`, `NEW_ANSWER`, `CHAT_REQUEST`, `VERIFICATION_COMPLETE`
   - `CHAT_REQUEST`, `VERIFICATION_COMPLETE`는 Phase 2용 — 코드만 선언, 사용하지 않음
-- [ ] `Notification` 엔티티
+- [x] `Notification` 엔티티
   - `@ManyToOne(LAZY)` member
   - `type` (enum)
   - `content` (VARCHAR 500)
@@ -154,22 +154,22 @@ FakeRepository 사용 단위 테스트:
   - `ON DELETE CASCADE` (member 삭제 시)
   - 정적 팩터리: `Notification.newQuestion(Member receiver, Long questionId, String reviewTitle)`
   - 변경 메서드: `markAsRead()`
-- [ ] `NotificationRepository`
+- [x] `NotificationRepository`
 
 ### API
 
-- [ ] `GET /api/v1/notifications` — 내 알림 목록 (로그인 필요)
+- [x] `GET /api/v1/notifications` — 내 알림 목록 (로그인 필요)
   - 최신순 정렬, `isRead=false` 먼저 표시
   - Response: `List<NotificationResponse>` (id, type, content, referenceId, isRead, createdAt)
-- [ ] `PATCH /api/v1/notifications/{id}/read` — 읽음 처리
+- [x] `PATCH /api/v1/notifications/{id}/read` — 읽음 처리
   - 본인 알림만 처리 가능
 
 ---
 
 ## Week 3 완료 기준
 
-- [ ] Q&A 블러 API: 비로그인 → blurred=true, 로그인 → blurred=false 확인
-- [ ] 질문 작성 → 알림 생성 → 알림 조회 플로우 동작
-- [ ] 답변 작성 → 알림 생성 → 알림 조회 플로우 동작
-- [ ] `./gradlew test` 전체 통과, 커버리지 90%+
-- [ ] product-analyst 블러 스펙 검증 통과
+- [x] Q&A 블러 API: 비로그인 → blurred=true, 로그인 → blurred=false 확인
+- [x] 질문 작성 → 알림 생성 → 알림 조회 플로우 동작
+- [x] 답변 작성 → 알림 생성 → 알림 조회 플로우 동작
+- [x] `./gradlew test` 전체 통과 (2026-04-20)
+- [ ] 커버리지 90%+ 확인 필요

@@ -1,6 +1,6 @@
 ---
 name: ic-dev-orchestrator
-description: "Interview Connect 개발 오케스트레이터. 기능 구현, 주간 태스크 실행, 코드 리뷰, TDD 테스트 작성 요청을 받아 적절한 에이전트 팀으로 조율한다. '구현해줘', 'Task 진행', '만들어줘', '추가해줘', '수정해줘', '보완해줘', '다시 실행', '재실행', '업데이트', '이전 결과 개선', '비즈니스 규칙 확인', '도메인 분석' 등 Interview Connect 개발 관련 모든 작업 요청 시 이 스킬을 사용."
+description: "Interview Connect 개발 오케스트레이터. 기능 구현, 주간 태스크 실행, 코드 리뷰, TDD 테스트 작성 요청을 받아 적절한 에이전트 팀으로 조율한다. '구현해줘', 'Task 진행', '만들어줘', '추가해줘', '수정해줘', '보완해줘', '다시 실행', '재실행', '업데이트', '이전 결과 개선', '비즈니스 규칙 확인', '도메인 분석', '이어서', '이어서 진행해줘', '계속', '재개', '끊긴 곳부터', '어디까지 했어' 등 Interview Connect 개발 관련 모든 작업 요청 시 이 스킬을 사용."
 ---
 
 # IC Dev Orchestrator
@@ -42,13 +42,35 @@ Interview Connect 개발 전체를 조율하는 마스터 오케스트레이터.
 
 ## 워크플로우
 
-### Phase 0: 컨텍스트 확인
+### Phase 0: 컨텍스트 확인 + 재시작 지점 판별
 
-1. `_workspace/` 존재 여부 확인
-2. 사용자 요청이 후속 작업인지 새 작업인지 판단:
-   - 후속 작업 (수정/보완/재실행): 기존 `_workspace/` 활용, 해당 단계부터 재실행
-   - 새 작업: `_workspace/`를 `_workspace_{YYYYMMDD}/`로 이동 후 진행
-3. `docs/phase1-tasks.md`를 읽어 현재 Phase 진행 상황 파악
+1. `_workspace/PROGRESS.md` 존재 여부 확인
+   - **존재하면**: 파일을 읽어 마지막 완료 단계 확인 → 다음 단계부터 재시작
+   - **없으면**: 신규 실행 또는 새 작업 판단으로 이동
+
+2. 사용자 요청 유형 판단:
+   - `"이어서"`, `"계속"`, `"재개"` 포함 → PROGRESS.md 기준으로 중단 지점부터 재시작
+   - 후속 수정 요청 → 기존 `_workspace/` 활용, 해당 단계만 재실행
+   - 새 작업 → 기존 `_workspace/`를 `_workspace_{YYYYMMDD}/`로 이동 후 진행
+
+3. **신규 실행 시** `_workspace/PROGRESS.md` 초기화:
+   ```markdown
+   # PROGRESS — {태스크명}
+   시작: {날짜}
+   태스크: {사용자 요청 내용 요약}
+
+   ## 파이프라인 진행 상황
+   - [ ] analyst — 00_product_spec.md
+   - [ ] designer — 01_domain_design.md
+   - [ ] tester — 02_tdd_tests.md
+   - [ ] implementer — 03_impl_summary.md + 소스 파일
+   - [ ] reviewer — 04_review_report.md
+
+   ## 재시작 방법
+   "이어서 진행해줘" 라고 입력하면 마지막 완료 단계 다음부터 자동 재시작.
+   ```
+
+4. `docs/phase1-tasks.md`를 읽어 현재 Phase 진행 상황 파악
 
 ### Phase 1: 요청 분석
 

@@ -1,5 +1,7 @@
 package com.ic.domain.review.service;
 
+import com.ic.common.exception.BusinessException;
+import com.ic.common.exception.ErrorCode;
 import com.ic.domain.company.Company;
 import com.ic.domain.company.CompanyRepository;
 import com.ic.domain.member.Member;
@@ -34,13 +36,12 @@ public class ReviewService {
      */
     @Transactional
     public InterviewReview createReview(Long memberId, CreateReviewRequest request) {
-        // 임시로 하드코딩된 회원 권한 체크
-        if (memberId.equals(999L)) { // 일반회원 ID로 가정
-            throw new IllegalArgumentException("인증회원만 후기를 작성할 수 있습니다");
+        final Member member = findMemberById(memberId);
+
+        if (!member.canWriteReview()) {
+            throw BusinessException.from(ErrorCode.REVIEW_PERMISSION_DENIED);
         }
 
-        // 회원과 회사 정보 조회
-        final Member member = findMemberById(memberId);
         final Company company = findCompanyById(request.companyId());
 
         final InterviewReview review = InterviewReview.create(
@@ -79,7 +80,7 @@ public class ReviewService {
     @Transactional
     public InterviewReview getReview(Long reviewId) {
         final InterviewReview review = reviewRepository.findById(reviewId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 후기입니다"));
+                .orElseThrow(() -> BusinessException.from(ErrorCode.REVIEW_NOT_FOUND));
 
         review.increaseViewCount();
         return reviewRepository.save(review);
@@ -91,10 +92,10 @@ public class ReviewService {
     @Transactional
     public InterviewReview updateReview(Long memberId, Long reviewId, UpdateReviewRequest request) {
         final InterviewReview review = reviewRepository.findById(reviewId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 후기입니다"));
+                .orElseThrow(() -> BusinessException.from(ErrorCode.REVIEW_NOT_FOUND));
 
         if (!review.isWrittenBy(memberId)) {
-            throw new IllegalArgumentException("자신의 후기만 수정할 수 있습니다");
+            throw BusinessException.from(ErrorCode.REVIEW_AUTHOR_MISMATCH);
         }
 
         // 필드 업데이트
@@ -123,10 +124,10 @@ public class ReviewService {
     @Transactional
     public void deleteReview(Long memberId, Long reviewId) {
         final InterviewReview review = reviewRepository.findById(reviewId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 후기입니다"));
+                .orElseThrow(() -> BusinessException.from(ErrorCode.REVIEW_NOT_FOUND));
 
         if (!review.isWrittenBy(memberId)) {
-            throw new IllegalArgumentException("자신의 후기만 삭제할 수 있습니다");
+            throw BusinessException.from(ErrorCode.REVIEW_AUTHOR_MISMATCH);
         }
 
         reviewRepository.deleteById(reviewId);
@@ -144,7 +145,7 @@ public class ReviewService {
      */
     private Member findMemberById(Long memberId) {
         return memberRepository.findById(memberId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원입니다"));
+                .orElseThrow(() -> BusinessException.from(ErrorCode.MEMBER_NOT_FOUND));
     }
 
     /**
@@ -152,7 +153,7 @@ public class ReviewService {
      */
     private Company findCompanyById(Long companyId) {
         return companyRepository.findById(companyId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회사입니다"));
+                .orElseThrow(() -> BusinessException.from(ErrorCode.COMPANY_NOT_FOUND));
     }
 
 

@@ -82,4 +82,19 @@ public class InterviewReviewFixture {
                 회원, 회사, 면접날짜, 포지션, 면접유형, 질문목록, 난이도, 분위기, 결과, 내용
         );
     }
+
+    public static InterviewReview createReview() {
+        return InterviewReview.create(
+                MemberFixture.createVerifiedMember(),
+                CompanyFixture.카카오(),
+                LocalDate.of(2024, 1, 15),
+                "백엔드 개발자",
+                Arrays.asList("기술 면접", "인성 면접"),
+                Arrays.asList("자기소개를 해주세요", "프로젝트 경험을 말해주세요"),
+                3,
+                4,
+                InterviewResult.PASS,
+                "전반적으로 좋은 분위기의 면접이었습니다."
+        );
+    }
 }

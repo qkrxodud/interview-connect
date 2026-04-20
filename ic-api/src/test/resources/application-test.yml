@@ -1,0 +1,71 @@
+spring:
+  application:
+    name: interview-connect-api-test
+
+  # Bean override 허용 (테스트용)
+  main:
+    allow-bean-definition-overriding: true
+
+  datasource:
+    url: jdbc:h2:mem:testdb
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+    defer-datasource-initialization: true
+    properties:
+      hibernate:
+        format_sql: true
+        use_sql_comments: true
+        dialect: org.hibernate.dialect.H2Dialect
+
+  sql:
+    init:
+      mode: embedded
+
+  # Redis 비활성화 (테스트용)
+  data:
+    redis:
+      repositories:
+        enabled: false
+
+  # Redis/Mail 자동 구성 제외 (TestApplicationConfig에서 이전)
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration
+      - org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration
+      - org.springframework.boot.autoconfigure.mail.MailSenderAutoConfiguration
+
+# Redis 빈 비활성화 (RedisConfig, RedisRefreshTokenRepository 조건부 비활성화)
+redis:
+  enabled: false
+
+  security:
+    user:
+      name: test
+      password: test
+
+# JWT 설정 (테스트용)
+jwt:
+  secret: test-secret-key-for-testing-only-min-256-bits
+  access-token-expire-time: 3600000   # 1시간
+  refresh-token-expire-time: 86400000  # 1일
+
+logging:
+  level:
+    org.hibernate.SQL: ERROR
+    org.hibernate.type.descriptor.sql.BasicBinder: ERROR
+    com.ic: WARN
+    root: WARN
+    org.springframework: WARN
+    org.springframework.boot.test: ERROR
+    org.springframework.web: WARN

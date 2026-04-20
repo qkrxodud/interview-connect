@@ -4,6 +4,7 @@ import com.ic.common.exception.BusinessException;
 import com.ic.common.exception.ErrorCode;
 import com.ic.domain.member.Member;
 import com.ic.domain.member.MemberRepository;
+import com.ic.domain.notification.NotificationService;
 import com.ic.domain.qa.ReviewAnswer;
 import com.ic.domain.qa.ReviewAnswerRepository;
 import com.ic.domain.qa.ReviewQuestion;
@@ -35,6 +36,7 @@ public class QaService {
     private final ReviewAnswerRepository reviewAnswerRepository;
     private final InterviewReviewRepository interviewReviewRepository;
     private final MemberRepository memberRepository;
+    private final NotificationService notificationService;
 
     /**
      * 특정 후기의 Q&A 목록 조회 (비로그인 사용자)
@@ -82,6 +84,12 @@ public class QaService {
         final ReviewQuestion question = ReviewQuestion.create(review, questioner, request.content());
         final ReviewQuestion savedQuestion = reviewQuestionRepository.save(question);
 
+        // 후기 작성자에게 새 질문 알림 발송 (본인 질문 제외)
+        final Member reviewAuthor = review.getMember();
+        if (!Objects.equals(reviewAuthor.getId(), questionerId)) {
+            notificationService.createQuestionNotification(reviewAuthor, savedQuestion.getId(), review.getPosition());
+        }
+
         return QaDto.QuestionResponse.from(savedQuestion);
     }
 
@@ -103,6 +111,12 @@ public class QaService {
 
         // 양방향 연관관계 설정
         question.addAnswer(savedAnswer);
+
+        // 질문 작성자에게 새 답변 알림 발송 (본인 답변 제외)
+        final Member questionAuthor = question.getQuestioner();
+        if (!Objects.equals(questionAuthor.getId(), answererId)) {
+            notificationService.createAnswerNotification(questionAuthor, savedAnswer.getId(), question.getContent());
+        }
 
         return QaDto.AnswerResponse.from(savedAnswer);
     }
@@ -165,13 +179,13 @@ public class QaService {
 
     private void validateNotSelfAnswer(final ReviewQuestion question, final Long answererId) {
         if (Objects.equals(question.getQuestioner().getId(), answererId)) {
-            throw BusinessException.of(ErrorCode.INVALID_INPUT, "자신이 작성한 질문에는 답변할 수 없습니다");
+            throw BusinessException.of(ErrorCode.INVALID_INPUT_VALUE, "자신이 작성한 질문에는 답변할 수 없습니다");
         }
     }
 
     private void validateNoDuplicateAnswer(final Long questionId, final Long answererId) {
         if (reviewAnswerRepository.existsByReviewQuestionIdAndAnswererId(questionId, answererId)) {
-            throw BusinessException.of(ErrorCode.INVALID_INPUT, "이미 답변을 작성했습니다");
+            throw BusinessException.of(ErrorCode.INVALID_INPUT_VALUE, "이미 답변을 작성했습니다");
         }
     }
 

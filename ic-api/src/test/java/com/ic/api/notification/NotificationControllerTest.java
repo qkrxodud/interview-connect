@@ -1,13 +1,19 @@
 package com.ic.api.notification;
 
+import com.ic.api.integration.config.IntegrationTestFakesConfig;
+import com.ic.api.integration.config.TestApplicationConfig;
+import com.ic.api.integration.config.TestSecurityConfig;
 import com.ic.domain.member.Member;
+import com.ic.domain.member.MemberRole;
 import com.ic.domain.notification.Notification;
 import com.ic.domain.notification.NotificationService;
 import com.ic.domain.notification.NotificationType;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.Page;
@@ -16,39 +22,56 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@WebMvcTest(value = NotificationController.class, excludeAutoConfiguration = {
-        org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration.class,
-        org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration.class
-})
+@SpringBootTest
+@ActiveProfiles("test")
+@Import({IntegrationTestFakesConfig.class, TestApplicationConfig.class, TestSecurityConfig.class})
+@AutoConfigureMockMvc
 class NotificationControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
 
+    @Autowired
+    private IntegrationTestFakesConfig fakesConfig;
+
     @MockBean
     private NotificationService notificationService;
 
+    private Member testMember;
+
+    @BeforeEach
+    void setUp() {
+        fakesConfig.resetAllFakes();
+        testMember = Member.builder()
+                .id(1L)
+                .email("test@example.com")
+                .password("hashedPassword123!")
+                .nickname("테스터")
+                .role(MemberRole.VERIFIED)
+                .emailVerified(true)
+                .build();
+        fakesConfig.getMemberRepository().save(testMember);
+    }
+
     @Test
-    @WithMockUser
+    @WithMockUser(username = "1")
     @DisplayName("알림 목록 조회 API가 정상 작동한다")
     void shouldGetNotificationsSuccessfully() throws Exception {
         // given
-        final Member member = createTestMember();
         final List<Notification> notifications = List.of(
-                createTestNotification(member, NotificationType.QA_NEW_QUESTION),
-                createTestNotification(member, NotificationType.QA_NEW_ANSWER)
+                createTestNotification(testMember, NotificationType.QA_NEW_QUESTION),
+                createTestNotification(testMember, NotificationType.QA_NEW_ANSWER)
         );
         final Page<Notification> page = new PageImpl<>(notifications, PageRequest.of(0, 20), 2);
 
@@ -57,7 +80,6 @@ class NotificationControllerTest {
 
         // when & then
         mockMvc.perform(get("/api/v1/notifications")
-                        .with(authentication(createAuthentication(member)))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
@@ -67,13 +89,12 @@ class NotificationControllerTest {
     }
 
     @Test
-    @WithMockUser
+    @WithMockUser(username = "1")
     @DisplayName("읽지 않은 알림 목록 조회 API가 정상 작동한다")
     void shouldGetUnreadNotificationsSuccessfully() throws Exception {
         // given
-        final Member member = createTestMember();
         final List<Notification> unreadNotifications = List.of(
-                createTestNotification(member, NotificationType.QA_NEW_QUESTION)
+                createTestNotification(testMember, NotificationType.QA_NEW_QUESTION)
         );
         final Page<Notification> page = new PageImpl<>(unreadNotifications, PageRequest.of(0, 20), 1);
 
@@ -82,7 +103,6 @@ class NotificationControllerTest {
 
         // when & then
         mockMvc.perform(get("/api/v1/notifications/unread")
-                        .with(authentication(createAuthentication(member)))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
@@ -92,11 +112,10 @@ class NotificationControllerTest {
     }
 
     @Test
-    @WithMockUser
+    @WithMockUser(username = "1")
     @DisplayName("알림 요약 정보 조회 API가 정상 작동한다")
     void shouldGetNotificationSummarySuccessfully() throws Exception {
         // given
-        final Member member = createTestMember();
         final long unreadCount = 3L;
         final Page<Notification> totalPage = new PageImpl<>(List.of(), PageRequest.of(0, 20), 10L);
 
@@ -106,7 +125,6 @@ class NotificationControllerTest {
 
         // when & then
         mockMvc.perform(get("/api/v1/notifications/summary")
-                        .with(authentication(createAuthentication(member)))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
@@ -115,47 +133,32 @@ class NotificationControllerTest {
     }
 
     @Test
-    @WithMockUser
+    @WithMockUser(username = "1")
     @DisplayName("특정 알림 읽음 처리 API가 정상 작동한다")
     void shouldMarkNotificationAsReadSuccessfully() throws Exception {
         // given
-        final Member member = createTestMember();
         final Long notificationId = 1L;
 
         // when & then
         mockMvc.perform(patch("/api/v1/notifications/{notificationId}/read", notificationId)
-                        .with(authentication(createAuthentication(member)))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true));
 
-        verify(notificationService).markAsRead(notificationId, member);
+        verify(notificationService).markAsRead(eq(notificationId), any(Member.class));
     }
 
     @Test
-    @WithMockUser
+    @WithMockUser(username = "1")
     @DisplayName("모든 알림 읽음 처리 API가 정상 작동한다")
     void shouldMarkAllNotificationsAsReadSuccessfully() throws Exception {
-        // given
-        final Member member = createTestMember();
-
         // when & then
         mockMvc.perform(patch("/api/v1/notifications/read-all")
-                        .with(authentication(createAuthentication(member)))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true));
 
-        verify(notificationService).markAllAsRead(member);
-    }
-
-    private Member createTestMember() {
-        return Member.builder()
-                .id(1L)
-                .email("test@example.com")
-                .password("hashedPassword123!")
-                .nickname("테스터")
-                .build();
+        verify(notificationService).markAllAsRead(any(Member.class));
     }
 
     private Notification createTestNotification(Member recipient, NotificationType type) {
@@ -167,9 +170,5 @@ class NotificationControllerTest {
                 .referenceId(1L)
                 .referenceType("TEST")
                 .build();
-    }
-
-    private org.springframework.security.core.Authentication createAuthentication(Member member) {
-        return new org.springframework.security.authentication.TestingAuthenticationToken(member, null);
     }
 }

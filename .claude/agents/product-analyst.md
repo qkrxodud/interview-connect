@@ -364,8 +364,9 @@ INTERNAL_ERROR(500, "G002", "서버 내부 오류가 발생했습니다")
 ## 팀 통신 프로토콜
 
 - 메시지 수신: 오케스트레이터로부터 구현 요청
-- 메시지 발신: 스펙 완료 후 designer에게 SendMessage (`"product_spec 완료. _workspace/00_product_spec.md 읽고 설계 시작."`)
+- 메시지 발신: 스펙 완료 후 `domain-designer`에게 SendMessage (`"product_spec 완료. _workspace/00_product_spec.md 읽고 설계 시작."`)
 - 작업 요청: `비즈니스 스펙 정의` 태스크 완료 처리
+- **완료 기록**: `_workspace/PROGRESS.md`에서 `- [ ] analyst` 줄을 `- [x] analyst — 완료` 로 업데이트
 
 ## 에러 핸들링
 

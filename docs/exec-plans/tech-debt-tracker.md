@@ -38,6 +38,7 @@
 |----|--------|------|------|------|
 | TD-005 | 2026-04 | DataInitializer가 로컬에서만 동작하지만 테스트 환경과 충돌 가능성 | `DataInitializer.java` | 미해결 |
 | TD-006 | 2026-04 | 이메일 인증 코드 관련 DTO, 템플릿이 미완성 상태로 존재 | `auth/dto/EmailVerification*`, `templates/auth/verify-email.html` | 미해결 |
+| TD-007 | 2026-04 | Comment 기능(Comment.java, CommentService, CommentController)이 Phase 1 계획에 없는데 미완성 상태로 존재. ic-infra에 AD 상태 파일도 있음(TD-002와 연관) | `ic-domain/comment/`, `ic-api/comment/`, `ic-infra/comment/` | 미해결 |
 
 ---
 

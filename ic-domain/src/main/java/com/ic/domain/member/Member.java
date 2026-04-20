@@ -81,7 +81,7 @@ public class Member extends BaseTimeEntity {
      */
     public void changeRole(MemberRole newRole) {
         if (Objects.isNull(newRole)) {
-            throw BusinessException.from(ErrorCode.INVALID_INPUT);
+            throw BusinessException.from(ErrorCode.INVALID_INPUT_VALUE);
         }
         this.role = newRole;
     }
@@ -145,11 +145,11 @@ public class Member extends BaseTimeEntity {
     }
 
     /**
-     * 이메일 인증 코드 설정
+     * 이메일 인증 코드 변경 (1시간 후 만료)
      */
-    public void setVerificationCode(String code) {
+    public void changeVerificationCode(final String code) {
         this.verificationCode = code;
-        this.verificationCodeExpiry = LocalDateTime.now().plusHours(1); // 1시간 후 만료
+        this.verificationCodeExpiry = LocalDateTime.now().plusHours(1);
     }
 
     /**
@@ -192,37 +192,37 @@ public class Member extends BaseTimeEntity {
 
     private void validateEmail(String email) {
         if (Objects.isNull(email) || email.trim().isEmpty()) {
-            throw BusinessException.from(ErrorCode.INVALID_INPUT);
+            throw BusinessException.from(ErrorCode.INVALID_INPUT_VALUE);
         }
         if (!email.contains("@")) {
-            throw BusinessException.of(ErrorCode.INVALID_INPUT, "올바른 이메일 형식이 아닙니다");
+            throw BusinessException.of(ErrorCode.INVALID_INPUT_VALUE, "올바른 이메일 형식이 아닙니다");
         }
         if (email.length() > 100) {
-            throw BusinessException.of(ErrorCode.INVALID_INPUT, "이메일은 100자 이하로 입력해주세요");
+            throw BusinessException.of(ErrorCode.INVALID_INPUT_VALUE, "이메일은 100자 이하로 입력해주세요");
         }
     }
 
     private void validatePassword(String password) {
         if (Objects.isNull(password) || password.trim().isEmpty()) {
-            throw BusinessException.from(ErrorCode.INVALID_INPUT);
+            throw BusinessException.from(ErrorCode.INVALID_INPUT_VALUE);
         }
         if (password.length() < 8) {
             throw BusinessException.from(ErrorCode.INVALID_PASSWORD);
         }
         if (password.length() > 255) {
-            throw BusinessException.of(ErrorCode.INVALID_INPUT, "비밀번호는 255자 이하로 입력해주세요");
+            throw BusinessException.of(ErrorCode.INVALID_INPUT_VALUE, "비밀번호는 255자 이하로 입력해주세요");
         }
     }
 
     private void validateNickname(String nickname) {
         if (Objects.isNull(nickname) || nickname.trim().isEmpty()) {
-            throw BusinessException.from(ErrorCode.INVALID_INPUT);
+            throw BusinessException.from(ErrorCode.INVALID_INPUT_VALUE);
         }
         if (nickname.length() > 30) {
-            throw BusinessException.of(ErrorCode.INVALID_INPUT, "닉네임은 30자 이하로 입력해주세요");
+            throw BusinessException.of(ErrorCode.INVALID_INPUT_VALUE, "닉네임은 30자 이하로 입력해주세요");
         }
         if (nickname.length() < 2) {
-            throw BusinessException.of(ErrorCode.INVALID_INPUT, "닉네임은 2자 이상 입력해주세요");
+            throw BusinessException.of(ErrorCode.INVALID_INPUT_VALUE, "닉네임은 2자 이상 입력해주세요");
         }
     }
 }

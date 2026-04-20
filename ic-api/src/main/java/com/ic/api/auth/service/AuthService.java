@@ -73,7 +73,7 @@ public class AuthService {
 
         // 이메일 인증 여부 확인
         if (!member.isEmailVerified()) {
-            throw BusinessException.of(ErrorCode.INVALID_INPUT, "이메일 인증이 완료되지 않았습니다. 이메일을 확인해주세요.");
+            throw BusinessException.of(ErrorCode.INVALID_INPUT_VALUE, "이메일 인증이 완료되지 않았습니다. 이메일을 확인해주세요.");
         }
 
         final String accessToken = jwtTokenProvider.generateAccessToken(member.getId(), member.getRole());
@@ -127,7 +127,7 @@ public class AuthService {
         final Member member = findMemberByEmail(email);
 
         if (!member.isVerificationCodeValid(code)) {
-            throw BusinessException.of(ErrorCode.INVALID_INPUT, "인증 코드가 유효하지 않거나 만료되었습니다.");
+            throw BusinessException.of(ErrorCode.INVALID_INPUT_VALUE, "인증 코드가 유효하지 않거나 만료되었습니다.");
         }
 
         member.verifyEmail();
@@ -145,7 +145,7 @@ public class AuthService {
         final Member member = findMemberByEmail(email);
 
         if (member.isEmailVerified()) {
-            throw BusinessException.of(ErrorCode.INVALID_INPUT, "이미 인증된 이메일입니다.");
+            throw BusinessException.of(ErrorCode.INVALID_INPUT_VALUE, "이미 인증된 이메일입니다.");
         }
 
         final String newVerificationCode = emailService.generateVerificationCode();

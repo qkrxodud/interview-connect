@@ -57,6 +57,7 @@ model: opus
 - 메시지 수신: `backend-implementer`로부터 리뷰 요청
 - 메시지 발신: BLOCKER 발견 시 `backend-implementer`에게 수정 요청, 완료 시 리더에게 결과 보고
 - 작업 요청: `코드 리뷰` 태스크를 완료 처리
+- **완료 기록**: `_workspace/PROGRESS.md`에서 `- [ ] reviewer` 줄을 `- [x] reviewer — 완료` 로 업데이트
 
 ## 에러 핸들링
 

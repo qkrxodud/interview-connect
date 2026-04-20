@@ -43,7 +43,7 @@ public class CompanyService {
             return List.of();
         }
 
-        return companyRepository.findByNameContaining(keyword.trim());
+        return companyRepository.findTop10ByNameContainingIgnoreCase(keyword.trim());
     }
 
     /**
@@ -97,7 +97,7 @@ public class CompanyService {
      */
     @Transactional
     public void deleteCompany(final Long companyId) {
-        if (!companyRepository.findById(companyId).isPresent()) {
+        if (!companyRepository.existsById(companyId)) {
             throw BusinessException.from(ErrorCode.COMPANY_NOT_FOUND);
         }
 
@@ -109,7 +109,7 @@ public class CompanyService {
      */
     private void validateCompanyName(final String name) {
         if (Objects.isNull(name) || name.trim().isEmpty()) {
-            throw BusinessException.from(ErrorCode.INVALID_INPUT);
+            throw BusinessException.from(ErrorCode.INVALID_INPUT_VALUE);
         }
     }
 
@@ -118,7 +118,7 @@ public class CompanyService {
      */
     private void validateDuplicateName(final String name) {
         if (companyRepository.existsByName(name)) {
-            throw BusinessException.from(ErrorCode.INVALID_INPUT);
+            throw BusinessException.from(ErrorCode.DUPLICATE_COMPANY_NAME);
         }
     }
 }

@@ -16,6 +16,7 @@
 | 2026-04-19 | 파일 경로 오류 수정 | backend-implementer.md, code-reviewer.md | _workspace 파일 번호 불일치(02/03) BLOCKER 수정 |
 | 2026-04-19 | ic-weekly-task product-analyst 누락 수정 | ic-weekly-task/SKILL.md | 주간 태스크에서도 비즈니스 룰 검증 필요 |
 | 2026-04-19 | tdd-test-generator IC 컨텍스트 추가 | agents/tdd-test-generator.md | 팀 파이프라인 역할 명세 및 model opus로 통일 |
+| 2026-04-19 | PROGRESS.md 체크포인트 시스템 추가 | ic-dev-orchestrator, ic-feature-impl, 전체 에이전트 | 토큰 소진으로 중단 시 "이어서 진행해줘"로 재시작 지원 |
 
 ---
 

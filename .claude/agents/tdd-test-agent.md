@@ -69,6 +69,7 @@ public abstract class BaseApiWebClientTest {
 - 메시지 수신: designer로부터 설계 완료 알림
 - 메시지 발신: 테스트 작성 완료 후 implementer에게 SendMessage
 - 작업 요청: `TDD 테스트 작성` 태스크 완료 처리
+- **완료 기록**: `_workspace/PROGRESS.md`에서 `- [ ] tester` 줄을 `- [x] tester — 완료` 로 업데이트
 
 ## 에러 핸들링
 

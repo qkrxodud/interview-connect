@@ -43,6 +43,9 @@ class AuthServiceTest extends ServiceTestBase {
     @Mock
     private JwtTokenProvider jwtTokenProvider;
 
+    @Mock
+    private com.ic.domain.member.EmailService emailService;
+
     private AuthService authService;
 
     private SignupRequest signupRequest;
@@ -55,7 +58,8 @@ class AuthServiceTest extends ServiceTestBase {
                 memberRepository,
                 refreshTokenRepository,
                 passwordEncoder,
-                jwtTokenProvider
+                jwtTokenProvider,
+                emailService
         );
 
         signupRequest = new SignupRequest("test@example.com", "password123", "password123", "테스트");
@@ -134,6 +138,7 @@ class AuthServiceTest extends ServiceTestBase {
                 .password(member.getPassword())
                 .nickname(member.getNickname())
                 .role(member.getRole())
+                .emailVerified(true)
                 .build();
 
             when(memberRepository.findByEmail(loginRequest.email())).thenReturn(Optional.of(savedMember));

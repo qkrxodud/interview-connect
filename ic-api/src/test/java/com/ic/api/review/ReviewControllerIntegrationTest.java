@@ -6,8 +6,11 @@ import com.ic.api.integration.config.TestApplicationConfig;
 import com.ic.api.integration.config.TestSecurityConfig;
 import com.ic.api.review.dto.ReviewCreateRequest;
 import com.ic.api.review.dto.ReviewUpdateRequest;
-import com.ic.common.response.ApiResponse;
+import com.ic.domain.company.Company;
+import com.ic.domain.member.Member;
 import com.ic.domain.review.InterviewResult;
+import com.ic.domain.review.InterviewReview;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +25,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.time.LocalDate;
 import java.util.List;
 
+import static com.ic.domain.member.MemberRole.VERIFIED;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -41,6 +45,45 @@ class ReviewControllerIntegrationTest {
 
     @Autowired
     private ObjectMapper objectMapper;
+
+    @Autowired
+    private IntegrationTestFakesConfig fakesConfig;
+
+    @BeforeEach
+    void setUpTestData() {
+        fakesConfig.resetAllFakes();
+
+        // 테스트용 인증 회원 생성 (ID=1)
+        final Member member = Member.builder()
+                .id(1L)
+                .email("test@example.com")
+                .password("password123!")
+                .nickname("테스터")
+                .role(VERIFIED)
+                .emailVerified(true)
+                .build();
+        fakesConfig.getMemberRepository().save(member);
+
+        // 테스트용 회사 생성 (ID=1)
+        final Company company = fakesConfig.getCompanyRepository().createTestCompany("카카오", "IT");
+
+        // 테스트용 후기 생성 (ID=1, 회원=1, 회사=1)
+        final InterviewReview review = InterviewReview.builder()
+                .id(1L)
+                .member(member)
+                .company(company)
+                .interviewDate(LocalDate.of(2024, 1, 15))
+                .position("백엔드 개발자")
+                .interviewTypes(List.of("기술 면접", "인성 면접"))
+                .questions(List.of("자기소개를 해주세요"))
+                .difficulty(3)
+                .atmosphere(4)
+                .result(InterviewResult.PASS)
+                .content("전반적으로 좋은 면접이었습니다.")
+                .viewCount(0L)
+                .build();
+        fakesConfig.getInterviewReviewRepository().save(review);
+    }
 
     @Test
     @DisplayName("비로그인 사용자도 후기 목록을 조회할 수 있다")
@@ -69,7 +112,7 @@ class ReviewControllerIntegrationTest {
     }
 
     @Test
-    @WithMockUser(username = "testuser")
+    @WithMockUser(username = "1")
     @DisplayName("인증된 사용자는 후기를 생성할 수 있다")
     void shouldCreateReviewWhenAuthenticated() throws Exception {
         // given
@@ -120,7 +163,7 @@ class ReviewControllerIntegrationTest {
     }
 
     @Test
-    @WithMockUser(username = "testuser")
+    @WithMockUser(username = "1")
     @DisplayName("인증된 사용자는 후기를 수정할 수 있다")
     void shouldUpdateReviewWhenAuthenticated() throws Exception {
         // given
@@ -145,7 +188,7 @@ class ReviewControllerIntegrationTest {
     }
 
     @Test
-    @WithMockUser(username = "testuser")
+    @WithMockUser(username = "1")
     @DisplayName("인증된 사용자는 후기를 삭제할 수 있다")
     void shouldDeleteReviewWhenAuthenticated() throws Exception {
         // given
@@ -155,12 +198,11 @@ class ReviewControllerIntegrationTest {
         mockMvc.perform(delete("/api/v1/reviews/{reviewId}", reviewId)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
-                .andExpect(status().isNoContent())
-                .andExpect(jsonPath("$.success").value(true));
+                .andExpect(status().isNoContent());
     }
 
     @Test
-    @WithMockUser(username = "testuser")
+    @WithMockUser(username = "1")
     @DisplayName("인증된 사용자는 자신의 후기 목록을 조회할 수 있다")
     void shouldGetMyReviewsWhenAuthenticated() throws Exception {
         // when & then
@@ -174,7 +216,7 @@ class ReviewControllerIntegrationTest {
 
     @Test
     @DisplayName("잘못된 요청 데이터로 후기 생성 시 400 에러가 발생한다")
-    @WithMockUser(username = "testuser")
+    @WithMockUser(username = "1")
     void shouldReturn400WhenInvalidRequestData() throws Exception {
         // given - 필수 필드 누락
         final ReviewCreateRequest invalidRequest = new ReviewCreateRequest(

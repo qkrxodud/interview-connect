@@ -53,4 +53,24 @@ public class MemberFixture {
                 .role(MemberRole.VERIFIED)
                 .build();
     }
+
+    public static Member createVerifiedMember() {
+        return Member.builder()
+                .id(1L)
+                .email("verified@example.com")
+                .password("password123")
+                .nickname("인증회원")
+                .role(MemberRole.VERIFIED)
+                .build();
+    }
+
+    public static Member createGeneralMember() {
+        return Member.builder()
+                .id(2L)
+                .email("general@example.com")
+                .password("password123")
+                .nickname("일반회원")
+                .role(MemberRole.GENERAL)
+                .build();
+    }
 }

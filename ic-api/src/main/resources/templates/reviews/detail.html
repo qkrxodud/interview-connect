@@ -127,17 +127,181 @@
             </div>
         </div>
 
-        <!-- Q&A 섹션 (추후 구현 예정) -->
+        <!-- 댓글 섹션 -->
         <div class="card mt-4">
             <div class="card-header">
                 <h5 class="mb-0">
-                    <i class="fas fa-question-circle text-info"></i>
-                    질문 & 답변
+                    <i class="fas fa-comments text-info"></i>
+                    댓글 <span class="text-muted" th:text="'(' + ${commentCount} + ')'"></span>
                 </h5>
             </div>
-            <div class="card-body text-center text-muted">
-                <i class="fas fa-construction text-muted" style="font-size: 2rem;"></i>
-                <p class="mt-3">Q&A 기능은 추후 업데이트될 예정입니다.</p>
+            <div class="card-body">
+                <!-- 댓글 작성 폼 (로그인한 사용자만) -->
+                <div class="mb-4" sec:authorize="isAuthenticated()">
+                    <form th:action="@{/reviews/{id}/comments(id=${review.id})}" method="post">
+                        <div class="mb-3">
+                            <label for="commentContent" class="form-label">댓글 작성</label>
+                            <textarea class="form-control" id="commentContent" name="content"
+                                      rows="3" placeholder="댓글을 입력하세요..." required></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="commentVisibility" class="form-label">공개 범위</label>
+                            <select class="form-select" id="commentVisibility" name="visibility">
+                                <option value="PUBLIC">전체 공개</option>
+                                <option value="AUTHOR_ONLY">작성자와 글 작성자만</option>
+                            </select>
+                            <div class="form-text">
+                                <i class="fas fa-info-circle"></i>
+                                '작성자와 글 작성자만'을 선택하면 댓글 작성자와 후기 작성자만 볼 수 있습니다.
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-paper-plane"></i> 댓글 작성
+                        </button>
+                    </form>
+                </div>
+
+                <!-- 로그인 안내 (비로그인 사용자) -->
+                <div class="alert alert-info mb-4" sec:authorize="!isAuthenticated()">
+                    <i class="fas fa-info-circle"></i>
+                    댓글을 작성하려면 <a th:href="@{/auth/login}" class="alert-link">로그인</a>이 필요합니다.
+                </div>
+
+                <!-- 댓글 목록 -->
+                <div th:if="${commentCount > 0}">
+                    <hr>
+                    <div th:each="comment : ${comments}" class="comment-thread mb-4">
+                        <!-- 최상위 댓글 -->
+                        <div class="comment-item p-3 border rounded">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div class="comment-content flex-grow-1">
+                                    <div class="d-flex align-items-center mb-2">
+                                        <strong th:text="${comment.author.nickname}">작성자</strong>
+                                        <small class="text-muted ms-2"
+                                               th:text="${#temporals.format(comment.createdAt, 'yyyy-MM-dd HH:mm')}">
+                                            2024-01-15 14:30
+                                        </small>
+                                    </div>
+                                    <!-- 권한이 있는 사용자: 실제 내용 표시 -->
+                                    <p th:if="${isAuthenticated && comment.isVisibleTo(currentUserId, review.memberId)}" class="mb-2 comment-text" th:text="${comment.content}">
+                                        댓글 내용이 여기에 표시됩니다.
+                                    </p>
+                                    <!-- 권한이 없는 사용자: 블러 처리된 내용 표시 -->
+                                    <div th:if="${!isAuthenticated || !comment.isVisibleTo(currentUserId, review.memberId)}" class="mb-2 position-relative">
+                                        <p class="comment-blurred comment-text" th:text="${comment.blurredContent}">
+                                            가가가 가가가 가가가가가가.
+                                        </p>
+                                        <div class="blur-overlay position-absolute top-50 start-50 translate-middle">
+                                            <small class="badge bg-info text-dark" th:if="${!isAuthenticated}">
+                                                <i class="fas fa-lock"></i> 로그인하여 댓글 내용 보기
+                                            </small>
+                                            <small class="badge bg-warning text-dark" th:if="${isAuthenticated && !comment.isVisibleTo(currentUserId, review.memberId)}">
+                                                <i class="fas fa-user-lock"></i> 작성자 전용 댓글
+                                            </small>
+                                        </div>
+                                    </div>
+                                    <!-- 답글 버튼 (로그인한 사용자만) -->
+                                    <div sec:authorize="isAuthenticated()">
+                                        <button type="button" class="btn btn-link btn-sm p-0 text-decoration-none"
+                                                th:onclick="'toggleReplyForm(' + ${comment.id} + ')'">
+                                            <i class="fas fa-reply"></i> 답글
+                                        </button>
+                                    </div>
+                                </div>
+                                <!-- 삭제 버튼 (본인 댓글만) -->
+                                <div sec:authorize="isAuthenticated()">
+                                    <form th:if="${#authentication.name == #strings.toString(comment.author.id)}"
+                                          th:action="@{/reviews/{reviewId}/comments/{commentId}/delete(reviewId=${review.id}, commentId=${comment.id})}"
+                                          method="post" style="display: inline;"
+                                          onsubmit="return confirm('정말로 이 댓글을 삭제하시겠습니까?')">
+                                        <button type="submit" class="btn btn-outline-danger btn-sm">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+
+                            <!-- 답글 작성 폼 (숨김 상태) -->
+                            <div th:id="'replyForm-' + ${comment.id}" class="reply-form mt-3" style="display: none;" sec:authorize="isAuthenticated()">
+                                <form th:action="@{/reviews/{reviewId}/comments/{parentId}/replies(reviewId=${review.id}, parentId=${comment.id})}" method="post">
+                                    <div class="mb-2">
+                                        <textarea class="form-control" name="content" rows="2"
+                                                placeholder="답글을 입력하세요..." required></textarea>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <select class="form-select form-select-sm" name="visibility">
+                                                <option value="PUBLIC">전체 공개</option>
+                                                <option value="AUTHOR_ONLY">작성자와 글 작성자만</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-6 text-end">
+                                            <button type="submit" class="btn btn-primary btn-sm me-1">
+                                                <i class="fas fa-paper-plane"></i> 답글 작성
+                                            </button>
+                                            <button type="button" class="btn btn-secondary btn-sm"
+                                                    th:onclick="'toggleReplyForm(' + ${comment.id} + ')'">
+                                                취소
+                                            </button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+
+                        <!-- 대댓글들 -->
+                        <div th:if="${#lists.size(comment.activeReplies) > 0}" class="replies ms-4 mt-2">
+                            <div th:each="reply : ${comment.activeReplies}" class="reply-item mb-2 p-2 border-start border-3 border-secondary bg-light">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div class="reply-content flex-grow-1">
+                                        <div class="d-flex align-items-center mb-1">
+                                            <strong th:text="${reply.author.nickname}">답글 작성자</strong>
+                                            <small class="text-muted ms-2"
+                                                   th:text="${#temporals.format(reply.createdAt, 'yyyy-MM-dd HH:mm')}">
+                                                2024-01-15 15:00
+                                            </small>
+                                        </div>
+                                        <!-- 권한이 있는 사용자: 실제 답글 내용 표시 -->
+                                        <p th:if="${isAuthenticated && reply.isVisibleTo(currentUserId, review.memberId)}" class="mb-0 small reply-text" th:text="${reply.content}">
+                                            답글 내용이 여기에 표시됩니다.
+                                        </p>
+                                        <!-- 권한이 없는 사용자: 블러 처리된 답글 내용 표시 -->
+                                        <div th:if="${!isAuthenticated || !reply.isVisibleTo(currentUserId, review.memberId)}" class="mb-0 position-relative">
+                                            <p class="mb-0 small reply-text comment-blurred" th:text="${reply.blurredContent}">
+                                                가가 가가가 가가가가가가.
+                                            </p>
+                                            <div class="blur-overlay-small position-absolute top-50 start-50 translate-middle">
+                                                <small class="badge bg-info text-dark" style="font-size: 8px;" th:if="${!isAuthenticated}">
+                                                    <i class="fas fa-lock"></i> 로그인 필요
+                                                </small>
+                                                <small class="badge bg-warning text-dark" style="font-size: 8px;" th:if="${isAuthenticated && !reply.isVisibleTo(currentUserId, review.memberId)}">
+                                                    <i class="fas fa-user-lock"></i> 작성자 전용
+                                                </small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- 답글 삭제 버튼 (본인 답글만) -->
+                                    <div sec:authorize="isAuthenticated()">
+                                        <form th:if="${#authentication.name == #strings.toString(reply.author.id)}"
+                                              th:action="@{/reviews/{reviewId}/comments/{commentId}/delete(reviewId=${review.id}, commentId=${reply.id})}"
+                                              method="post" style="display: inline;"
+                                              onsubmit="return confirm('정말로 이 답글을 삭제하시겠습니까?')">
+                                            <button type="submit" class="btn btn-outline-danger btn-sm">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 댓글이 없을 때 -->
+                <div th:if="${commentCount == 0}" class="text-center text-muted py-4">
+                    <i class="fas fa-comment-slash text-muted" style="font-size: 2rem;"></i>
+                    <p class="mt-3">첫 번째 댓글을 작성해보세요!</p>
+                </div>
             </div>
         </div>
     </div>
@@ -166,5 +330,120 @@
 
     <footer th:replace="~{fragments/layout :: footer}"></footer>
     <div th:replace="~{fragments/layout :: scripts}"></div>
+
+    <!-- 댓글 블러 처리 및 텍스트 래핑 CSS -->
+    <style>
+        /* 댓글 및 대댓글 텍스트 줄바꿈 설정 */
+        .comment-text, .reply-text {
+            white-space: pre-line;
+            word-wrap: break-word;
+            word-break: break-word;
+            overflow-wrap: break-word;
+            hyphens: auto;
+            max-width: 100%;
+        }
+
+        .comment-blurred {
+            filter: blur(3px) !important;
+            pointer-events: none;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -khtml-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            -webkit-user-drag: none;
+            -khtml-user-drag: none;
+            -moz-user-drag: none;
+            -o-user-drag: none;
+            user-drag: none;
+        }
+
+        /* 대댓글 블러 처리 */
+        .reply-text.comment-blurred {
+            filter: blur(2px) !important;
+        }
+
+        .blur-overlay, .blur-overlay-small {
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        /* 댓글 컨테이너 레이아웃 개선 */
+        .comment-content {
+            min-width: 0; /* flex 아이템이 줄어들 수 있도록 */
+            overflow: hidden; /* 컨테이너를 벗어나지 않도록 */
+        }
+
+        .reply-content {
+            min-width: 0;
+            overflow: hidden;
+        }
+
+        /* 개발자 도구로 CSS 수정 방지를 위한 추가 보안 */
+        .comment-blurred::selection {
+            background: transparent;
+        }
+
+        .comment-blurred::-moz-selection {
+            background: transparent;
+        }
+
+        /* 긴 URL이나 특수 문자열 강제 줄바꿈 */
+        .comment-text, .reply-text {
+            word-break: break-all; /* 모든 문자에서 줄바꿈 허용 */
+        }
+    </style>
+
+    <!-- 대댓글 폼 토글 스크립트 -->
+    <script>
+        function toggleReplyForm(commentId) {
+            const replyForm = document.getElementById('replyForm-' + commentId);
+            if (replyForm.style.display === 'none' || replyForm.style.display === '') {
+                replyForm.style.display = 'block';
+                // 답글 텍스트 영역에 포커스
+                const textarea = replyForm.querySelector('textarea');
+                if (textarea) {
+                    textarea.focus();
+                }
+            } else {
+                replyForm.style.display = 'none';
+                // 텍스트 영역 초기화
+                const textarea = replyForm.querySelector('textarea');
+                if (textarea) {
+                    textarea.value = '';
+                }
+            }
+        }
+
+        // 브라우저 개발자 도구 감지 및 추가 보안
+        (function() {
+            'use strict';
+
+            // 우클릭 차단 (블러 처리된 요소에만)
+            document.addEventListener('contextmenu', function(e) {
+                if (e.target.closest('.comment-blurred')) {
+                    e.preventDefault();
+                    return false;
+                }
+            });
+
+            // 텍스트 선택 추가 차단
+            document.addEventListener('selectstart', function(e) {
+                if (e.target.closest('.comment-blurred')) {
+                    e.preventDefault();
+                    return false;
+                }
+            });
+
+            // 드래그 차단
+            document.addEventListener('dragstart', function(e) {
+                if (e.target.closest('.comment-blurred')) {
+                    e.preventDefault();
+                    return false;
+                }
+            });
+        })();
+    </script>
 </body>
 </html>
